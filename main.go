@@ -1,16 +1,25 @@
 package main
 
 import (
-	"einenlum/edicon/internal/plugins/php"
+	"einenlum/edicon/internal/plugins/ini"
 	"fmt"
 )
 
 func main() {
-	php_ini_content, err := php.GetPhpIniFileContent("/etc/php/php.ini")
+	sections, err := ini.GetSectionsFromIniFile("data/php.ini")
 	if err != nil {
 		fmt.Println("Error: ", err)
 		return
 	}
 
-	fmt.Println("PHP ini file content: ", php_ini_content)
+	for _, section := range sections {
+		// fmt.Printf("%+v\n", line)
+		fmt.Println("[" + section.Name + "]")
+
+		for _, line := range section.Lines {
+			if line.ContentType == ini.KeyValueType {
+				fmt.Println(line.StringContent)
+			}
+		}
+	}
 }
