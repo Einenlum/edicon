@@ -38,6 +38,11 @@ type Line struct {
 	SectionLine   *SectionLine
 }
 
+type IniFile struct {
+	Sections []Section
+	FilePath string
+}
+
 func parseLineString(lineNumber int, lineString string) Line {
 	// Check if line is empty
 	if len(lineString) == 0 {
@@ -116,11 +121,11 @@ func getSections(parsedLines *[]Line) []Section {
 	return sections
 }
 
-func GetSectionsFromIniFile(file string) ([]Section, error) {
-	parsedLines, err := ParseIniFile(file)
+func GetParsedIniFile(filePath string) (IniFile, error) {
+	parsedLines, err := ParseIniFile(filePath)
 	if err != nil {
-		return []Section{}, err
+		return IniFile{[]Section{}, filePath}, err
 	}
 
-	return getSections(parsedLines), nil
+	return IniFile{getSections(parsedLines), filePath}, nil
 }
