@@ -2,46 +2,9 @@ package ini
 
 import (
 	"einenlum/edicon/internal/io"
+	"errors"
 	"strings"
 )
-
-type LineContentType int
-
-const GlobalSectionName = "__GLOBAL__"
-
-const (
-	KeyValueType LineContentType = iota
-	SectionLineType
-	OtherType
-)
-
-type Section struct {
-	Name  string
-	Lines []Line
-}
-
-type KeyValue struct {
-	Key       string
-	Value     string
-	Commented bool
-}
-
-type SectionLine struct {
-	SectionName string
-}
-
-type Line struct {
-	LineNumber    int
-	StringContent string
-	ContentType   LineContentType
-	KeyValue      *KeyValue
-	SectionLine   *SectionLine
-}
-
-type IniFile struct {
-	Sections []Section
-	FilePath string
-}
 
 func parseLineString(lineNumber int, lineString string) Line {
 	// Check if line is empty
@@ -121,11 +84,29 @@ func getSections(parsedLines *[]Line) []Section {
 	return sections
 }
 
-func GetParsedIniFile(filePath string) (IniFile, error) {
-	parsedLines, err := ParseIniFile(filePath)
-	if err != nil {
-		return IniFile{[]Section{}, filePath}, err
+func DecomposeKeyWithBracketNotation(key string) ([]string, error) {
+	if !strings.Contains(key, "[") || !strings.Contains(key, "]") {
+		return []string{key}, nil
 	}
 
-	return IniFile{getSections(parsedLines), filePath}, nil
+	keyParts := strings.Split(key, "[")
+	if len(keyParts) != 2 {
+		return []string{}, errors.New("Invalid key format")
+	}
+
+	return []string{keyParts[0], keyParts[1]}, nil
+}
+
+func DecomposeKeyWithDotNotation(key string) ([]string, error) {
+	if !strings.Contains(key, ".") {
+		return []string{key}, nil
+	}
+
+	keyParts := strings.Split(key, ".")
+
+	return keyParts, nil
+}
+
+func getGlobalSection(sections *[]Section) *Section {
+	return GetSectionByName(sections, GlobalSectionName)
 }
