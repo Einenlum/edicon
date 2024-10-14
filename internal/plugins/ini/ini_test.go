@@ -111,12 +111,12 @@ func TestPrintIniFile(t *testing.T) {
 
 func cleanContent(output []byte) string {
 	stringOutput := string(output)
-
 	stringOutput = removeEmptyTrailingLines(stringOutput)
 
 	return stringOutput
 }
 
+// I had to add this to avoid dealing with weird trailing empty lines
 func removeEmptyTrailingLines(output string) string {
 	lastNonEmptyLineNumber := 0
 

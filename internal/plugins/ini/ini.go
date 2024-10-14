@@ -43,10 +43,7 @@ func getKeyLineBySectionName(sections *[]Section, sectionName string, key string
 }
 
 func EditIniFile(filePath string, key string, value string) (*IniFile, error) {
-	decomposedKey, err := DecomposeKeyWithDotNotation(key)
-	if err != nil {
-		return nil, err
-	}
+	decomposedKey := DecomposeKeyWithDotNotation(key)
 
 	iniFile, err := GetParsedIniFile(filePath)
 	if err != nil {

@@ -97,14 +97,14 @@ func DecomposeKeyWithBracketNotation(key string) ([]string, error) {
 	return []string{keyParts[0], keyParts[1]}, nil
 }
 
-func DecomposeKeyWithDotNotation(key string) ([]string, error) {
+func DecomposeKeyWithDotNotation(key string) []string {
 	if !strings.Contains(key, ".") {
-		return []string{key}, nil
+		return []string{key}
 	}
 
 	keyParts := strings.Split(key, ".")
 
-	return keyParts, nil
+	return keyParts
 }
 
 func getGlobalSection(sections *[]Section) *Section {
