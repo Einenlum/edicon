@@ -6,12 +6,12 @@ import (
 	"testing"
 )
 
-func TestDecomposeKeyWithDotNotation(t *testing.T) {
-	type TestElement struct {
-		inputKey string
-		expected []string
-	}
+type TestElement struct {
+	inputKey string
+	expected []string
+}
 
+func TestDecomposeKeyWithDotNotation(t *testing.T) {
 	dataProvider := []TestElement{
 		{"key", []string{"key"}},
 		{"key.foo", []string{"key", "foo"}},
@@ -20,12 +20,35 @@ func TestDecomposeKeyWithDotNotation(t *testing.T) {
 
 	for _, element := range dataProvider {
 		t.Run("it decomposes "+element.inputKey, func(t *testing.T) {
+			actual := DecomposeKeyWithDotNotation(element.inputKey)
+
+			if !reflect.DeepEqual(element.expected, actual) {
+				t.Error(fmt.Sprintf("Expected %s, got %s", element.expected, actual))
+			}
 		})
+	}
+}
 
-		actual := DecomposeKeyWithDotNotation(element.inputKey)
+func TestDecomposeKeyWithBracketNotation(t *testing.T) {
+	// @TODO
+	t.Skip("Not implemented yet")
 
-		if !reflect.DeepEqual(element.expected, actual) {
-			t.Error(fmt.Sprintf("Expected %s, got %s", element.expected, actual))
-		}
+	dataProvider := []TestElement{
+		{"key", []string{"key"}},
+		{"key[foo]", []string{"key", "foo"}},
+		{"key[foo][bar]", []string{"key", "foo", "bar"}},
+	}
+
+	for _, element := range dataProvider {
+		t.Run("it decomposes "+element.inputKey, func(t *testing.T) {
+			actual, err := DecomposeKeyWithBracketNotation(element.inputKey)
+			if err != nil {
+				t.Error(err)
+			}
+
+			if !reflect.DeepEqual(element.expected, actual) {
+				t.Error(fmt.Sprintf("Expected %s, got %s", element.expected, actual))
+			}
+		})
 	}
 }
