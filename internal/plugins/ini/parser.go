@@ -2,7 +2,7 @@ package ini
 
 import (
 	"einenlum/edicon/internal/io"
-	"errors"
+	"regexp"
 	"strings"
 )
 
@@ -84,17 +84,29 @@ func getSections(parsedLines *[]Line) []Section {
 	return sections
 }
 
-func DecomposeKeyWithBracketNotation(key string) ([]string, error) {
-	if !strings.Contains(key, "[") || !strings.Contains(key, "]") {
-		return []string{key}, nil
+func DecomposeKey(notationStyle NotationStyle, key string) []string {
+	if notationStyle == DotNotation {
+		return DecomposeKeyWithDotNotation(key)
 	}
 
-	keyParts := strings.Split(key, "[")
-	if len(keyParts) != 2 {
-		return []string{}, errors.New("Invalid key format")
+	return DecomposeKeyWithBracketNotation(key)
+}
+
+func DecomposeKeyWithBracketNotation(key string) []string {
+	re := regexp.MustCompile(`([^\[\]]+)|\[([^\[\]]+)\]`)
+	matches := re.FindAllStringSubmatch(key, -1)
+
+	var result []string
+	for _, match := range matches {
+		// Add the first part (outside the brackets) or any part inside the brackets
+		if match[1] != "" {
+			result = append(result, match[1])
+		} else if match[2] != "" {
+			result = append(result, match[2])
+		}
 	}
 
-	return []string{keyParts[0], keyParts[1]}, nil
+	return result
 }
 
 func DecomposeKeyWithDotNotation(key string) []string {

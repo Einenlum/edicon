@@ -115,7 +115,7 @@ func TestGetParameter(t *testing.T) {
 	missingCases := []string{"PHP.not_a_real_key", "not_a_real_key", "Foobar.baz"}
 	for _, key := range missingCases {
 		t.Run("it tries to get missing parameter "+key, func(t *testing.T) {
-			value, err := GetIniParameterFromPath(iniFilePath, key)
+			value, err := GetIniParameterFromPath(DotNotation, iniFilePath, key)
 			if err == nil {
 				t.Error("Got " + value + " instead")
 			}
@@ -123,21 +123,19 @@ func TestGetParameter(t *testing.T) {
 	}
 
 	validCases := map[string]string{
-		"PHP.engine":           "On",
-		"PHP.precision":        "14",
-		"PHP.disable_classes":  "",
-		"PHP.error_reporting":  "E_ALL & ~E_DEPRECATED & ~E_STRICT",
-		"PHP.default_mimetype": "\"text/html\"",
-		"PHP.zend_extension":   "opcache",
-		// Contains dot, we have to deal with this later
-		// "CLI Server.cli_server_color": "On",
+		"PHP.engine":              "On",
+		"PHP.precision":           "14",
+		"PHP.disable_classes":     "",
+		"PHP.error_reporting":     "E_ALL & ~E_DEPRECATED & ~E_STRICT",
+		"PHP.default_mimetype":    "\"text/html\"",
+		"PHP.zend_extension":      "opcache",
 		"mail function.SMTP":      "localhost",
 		"mail function.smtp_port": "25",
 	}
 
 	for key, expectedValue := range validCases {
 		t.Run("it tries to get existing parameter "+key, func(t *testing.T) {
-			value, err := GetIniParameterFromPath(iniFilePath, key)
+			value, err := GetIniParameterFromPath(DotNotation, iniFilePath, key)
 			if err != nil {
 				t.Error(err)
 			}
@@ -147,6 +145,17 @@ func TestGetParameter(t *testing.T) {
 			}
 		})
 	}
+
+	t.Run("it tries to get existing parameter CLI Server[cli_server.color]", func(t *testing.T) {
+		value, err := GetIniParameterFromPath(BracketsNotation, iniFilePath, "CLI Server[cli_server.color]")
+		if err != nil {
+			t.Error(err)
+		}
+
+		if "On" != value {
+			t.Error(fmt.Sprintf("Expected %s got %s", "On", value))
+		}
+	})
 }
 
 func cleanContent(output []byte) string {

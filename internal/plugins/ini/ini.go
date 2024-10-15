@@ -4,6 +4,13 @@ import (
 	"errors"
 )
 
+type NotationStyle int
+
+const (
+	DotNotation = iota
+	BracketsNotation
+)
+
 func GetParsedIniFile(filePath string) (IniFile, error) {
 	parsedLines, err := ParseIniFile(filePath)
 	if err != nil {
@@ -42,8 +49,8 @@ func getKeyLineBySectionName(sections *[]Section, sectionName string, key string
 	return getKeyLine(section, key)
 }
 
-func EditIniFile(filePath string, key string, value string) (*IniFile, error) {
-	decomposedKey := DecomposeKeyWithDotNotation(key)
+func EditIniFile(notationStyle NotationStyle, filePath string, key string, value string) (*IniFile, error) {
+	decomposedKey := DecomposeKey(notationStyle, key)
 
 	iniFile, err := GetParsedIniFile(filePath)
 	if err != nil {
@@ -69,13 +76,13 @@ func EditIniFile(filePath string, key string, value string) (*IniFile, error) {
 	return &iniFile, nil
 }
 
-func GetIniParameterFromPath(filePath string, key string) (string, error) {
+func GetIniParameterFromPath(notationStyle NotationStyle, filePath string, key string) (string, error) {
 	iniFile, err := GetParsedIniFile(filePath)
 	if err != nil {
 		return "", err
 	}
 
-	decomposedKey := DecomposeKeyWithDotNotation(key)
+	decomposedKey := DecomposeKey(notationStyle, key)
 	if len(decomposedKey) == 1 {
 		keyLine := getKeyLineBySectionName(&iniFile.Sections, "PHP", decomposedKey[0])
 		if keyLine == nil {

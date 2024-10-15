@@ -30,9 +30,6 @@ func TestDecomposeKeyWithDotNotation(t *testing.T) {
 }
 
 func TestDecomposeKeyWithBracketNotation(t *testing.T) {
-	// @TODO
-	t.Skip("Not implemented yet")
-
 	dataProvider := []TestElement{
 		{"key", []string{"key"}},
 		{"key[foo]", []string{"key", "foo"}},
@@ -41,10 +38,8 @@ func TestDecomposeKeyWithBracketNotation(t *testing.T) {
 
 	for _, element := range dataProvider {
 		t.Run("it decomposes "+element.inputKey, func(t *testing.T) {
-			actual, err := DecomposeKeyWithBracketNotation(element.inputKey)
-			if err != nil {
-				t.Error(err)
-			}
+			actual := DecomposeKeyWithBracketNotation(element.inputKey)
+			t.Log(actual)
 
 			if !reflect.DeepEqual(element.expected, actual) {
 				t.Error(fmt.Sprintf("Expected %s, got %s", element.expected, actual))
