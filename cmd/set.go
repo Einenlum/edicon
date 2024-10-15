@@ -9,14 +9,15 @@ import (
 )
 
 var setCmd = &cobra.Command{
-	Use:   "get",
-	Short: "Get an INI parameter",
+	Use:   "set",
+	Short: "Set an INI parameter",
 	Long: `Something
 Longer
 `,
 	Run: func(cmd *cobra.Command, args []string) {
 		key := args[0]
-		file := args[1]
+		value := args[1]
+		file := args[2]
 
 		useBrackets, err := cmd.Flags().GetBool("brackets")
 		if err != nil {
@@ -24,17 +25,17 @@ Longer
 		}
 		notationStyle := notation.GetNotationStyle(useBrackets)
 
-		value, err := ini.GetIniParameterFromPath(notationStyle, file, key)
+		iniFile, err := ini.EditIniFile(notationStyle, file, key, value)
 		if err != nil {
 			fmt.Println(err.Error())
 		}
 
-		fmt.Println(value)
+		fmt.Println(ini.OutputIniFile(iniFile, ini.FullOutput))
 	},
 }
 
 func init() {
-	rootCmd.AddCommand(getCmd)
+	rootCmd.AddCommand(setCmd)
 
-	getCmd.Flags().BoolP("brackets", "b", false, "Use brackts notation \"key[foo.bar]\" instead of dot notation")
+	setCmd.Flags().BoolP("brackets", "b", false, "Use brackts notation \"key[foo.bar]\" instead of dot notation")
 }

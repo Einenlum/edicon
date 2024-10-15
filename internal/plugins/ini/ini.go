@@ -8,7 +8,7 @@ import (
 func GetParsedIniFile(filePath string) (IniFile, error) {
 	parsedLines, err := ParseIniFile(filePath)
 	if err != nil {
-		return IniFile{[]Section{}, filePath}, err
+		return IniFile{&[]Section{}, filePath}, err
 	}
 
 	return IniFile{getSections(parsedLines), filePath}, nil
@@ -52,14 +52,14 @@ func EditIniFile(notationStyle notation.NotationStyle, filePath string, key stri
 	}
 
 	if len(decomposedKey) == 1 {
-		keyLine := getKeyLineBySectionName(&iniFile.Sections, "PHP", decomposedKey[0])
+		keyLine := getKeyLineBySectionName(iniFile.Sections, "PHP", decomposedKey[0])
 		if keyLine == nil {
 			return nil, errors.New("Key not found")
 		}
 
 		keyLine.KeyValue.Value = value
 	} else {
-		keyLine := getKeyLineBySectionName(&iniFile.Sections, decomposedKey[0], decomposedKey[1])
+		keyLine := getKeyLineBySectionName(iniFile.Sections, decomposedKey[0], decomposedKey[1])
 		if keyLine == nil {
 			return nil, errors.New("Key not found")
 		}
@@ -78,14 +78,14 @@ func GetIniParameterFromPath(notationStyle notation.NotationStyle, filePath stri
 
 	decomposedKey := DecomposeKey(notationStyle, key)
 	if len(decomposedKey) == 1 {
-		keyLine := getKeyLineBySectionName(&iniFile.Sections, "PHP", decomposedKey[0])
+		keyLine := getKeyLineBySectionName(iniFile.Sections, "PHP", decomposedKey[0])
 		if keyLine == nil {
 			return "", errors.New("Key not found")
 		}
 
 		return keyLine.KeyValue.Value, nil
 	} else {
-		keyLine := getKeyLineBySectionName(&iniFile.Sections, decomposedKey[0], decomposedKey[1])
+		keyLine := getKeyLineBySectionName(iniFile.Sections, decomposedKey[0], decomposedKey[1])
 		if keyLine == nil {
 			return "", errors.New("Key not found")
 		}

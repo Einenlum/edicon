@@ -26,12 +26,12 @@ func TestGetParsedIniFile(t *testing.T) {
 	}
 
 	t.Run("it parses sections", func(t *testing.T) {
-		if len(iniFile.Sections) != 4 {
-			t.Error("Expected 4 sections, got", len(iniFile.Sections))
+		if len(*iniFile.Sections) != 4 {
+			t.Error("Expected 4 sections, got", len(*iniFile.Sections))
 		}
 
 		sectionNames := []string{}
-		for _, section := range iniFile.Sections {
+		for _, section := range *iniFile.Sections {
 			sectionNames = append(sectionNames, section.Name)
 		}
 
@@ -49,7 +49,7 @@ func TestGetParsedIniFile(t *testing.T) {
 	}
 
 	for _, element := range dataProvider {
-		section := GetSectionByName(&iniFile.Sections, element.SectionName)
+		section := GetSectionByName(iniFile.Sections, element.SectionName)
 
 		t.Run("it parses "+element.SectionName+" lines", func(t *testing.T) {
 			if len(section.Lines) != element.expectedLines {
@@ -143,6 +143,54 @@ func TestGetParameter(t *testing.T) {
 
 			if expectedValue != value {
 				t.Error(fmt.Sprintf("Expected %s got %s", expectedValue, value))
+			}
+		})
+	}
+
+	t.Run("it tries to get existing parameter CLI Server[cli_server.color]", func(t *testing.T) {
+		value, err := GetIniParameterFromPath(notation.BracketsNotation, iniFilePath, "CLI Server[cli_server.color]")
+		if err != nil {
+			t.Error(err)
+		}
+
+		if "On" != value {
+			t.Error(fmt.Sprintf("Expected %s got %s", "On", value))
+		}
+	})
+}
+
+func TestEditParameter(t *testing.T) {
+	iniFilePath := "../../../data/php.ini"
+
+	cases := map[string][]string{
+		"PHP.engine":              {"PHP", "engine", "Off"},
+		"PHP.precision":           {"PHP", "precision", "140"},
+		"PHP.disable_classes":     {"PHP", "disable_classes", "myclass"},
+		"PHP.error_reporting":     {"PHP", "error_reporting", "E_ALL"},
+		"PHP.default_mimetype":    {"PHP", "default_mimetype", "\"text/plain\""},
+		"PHP.zend_extension":      {"PHP", "zend_extension", "opcache.so"},
+		"mail function.SMTP":      {"mail function", "SMTP", "smtp.gmail.com"},
+		"mail function.smtp_port": {"mail function", "smtp_port", "587"},
+	}
+
+	for key, values := range cases {
+		sectionName := values[0]
+		keyName := values[1]
+		newValue := values[2]
+
+		t.Run("it tries to edit existing parameter "+key, func(t *testing.T) {
+			iniFile, err := EditIniFile(notation.DotNotation, iniFilePath, key, newValue)
+			if err != nil {
+				t.Error(err)
+			}
+
+			keyLine := getKeyLineBySectionName(iniFile.Sections, sectionName, keyName)
+			if keyLine == nil {
+				t.Error(fmt.Sprintf("Could not find key %s in section %s", keyName, sectionName))
+			}
+
+			if newValue != keyLine.KeyValue.Value {
+				t.Error(fmt.Sprintf("Expected %s got %s", newValue, keyLine.KeyValue.Value))
 			}
 		})
 	}

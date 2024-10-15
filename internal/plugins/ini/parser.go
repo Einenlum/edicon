@@ -64,7 +64,7 @@ func ParseIniFile(file string) (*[]Line, error) {
 	return &parsedLines, nil
 }
 
-func getSections(parsedLines *[]Line) []Section {
+func getSections(parsedLines *[]Line) *[]Section {
 	sections := []Section{}
 	currentSection := Section{GlobalSectionName, []Line{}}
 
@@ -82,7 +82,7 @@ func getSections(parsedLines *[]Line) []Section {
 
 	sections = append(sections, currentSection)
 
-	return sections
+	return &sections
 }
 
 func DecomposeKey(notationStyle notation.NotationStyle, key string) []string {
