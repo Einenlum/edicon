@@ -8,14 +8,31 @@ import (
 )
 
 func parseLineString(lineNumber int, lineString string) Line {
+	// trim lineString
+	lineString = strings.TrimSpace(lineString)
+
 	// Check if line is empty
 	if len(lineString) == 0 {
-		return Line{lineNumber, lineString, OtherType, nil, nil}
+		return Line{
+			lineNumber,
+			lineString,
+			Original,
+			OtherType,
+			nil,
+			nil,
+		}
 	}
 
 	// Check if line is a comment
 	if strings.HasPrefix(lineString, ";") {
-		return Line{lineNumber, lineString, OtherType, nil, nil}
+		return Line{
+			lineNumber,
+			lineString,
+			Original,
+			OtherType,
+			nil,
+			nil,
+		}
 	}
 
 	// Check if line is a section
@@ -24,7 +41,14 @@ func parseLineString(lineNumber int, lineString string) Line {
 
 		sectionLine := SectionLine{sectionName}
 
-		return Line{lineNumber, lineString, SectionLineType, nil, &sectionLine}
+		return Line{
+			lineNumber,
+			lineString,
+			Original,
+			SectionLineType,
+			nil,
+			&sectionLine,
+		}
 	}
 
 	// Check if line is a key value pair
@@ -34,10 +58,24 @@ func parseLineString(lineNumber int, lineString string) Line {
 		key := strings.TrimSpace(keyValue[0])
 		value := strings.TrimSpace(keyValue[1])
 
-		return Line{lineNumber, lineString, KeyValueType, &KeyValue{key, value, false}, nil}
+		return Line{
+			lineNumber,
+			lineString,
+			Original,
+			KeyValueType,
+			&KeyValue{key, value, false},
+			nil,
+		}
 	}
 
-	return Line{lineNumber, lineString, OtherType, nil, nil}
+	return Line{
+		lineNumber,
+		lineString,
+		Original,
+		OtherType,
+		nil,
+		nil,
+	}
 }
 
 func getLineFromLineString(lineNumber int, line string) Line {
@@ -47,10 +85,10 @@ func getLineFromLineString(lineNumber int, line string) Line {
 	}
 }
 
-func ParseIniFile(file string) (*[]Line, error) {
+func ParseIniFile(file string) ([]Line, error) {
 	fileContent, err := io.GetFileContents(file)
 	if err != nil {
-		return &[]Line{}, err
+		return []Line{}, err
 	}
 
 	parsedLines := []Line{}
@@ -61,26 +99,20 @@ func ParseIniFile(file string) (*[]Line, error) {
 		parsedLines = append(parsedLines, parsedLine)
 	}
 
-	return &parsedLines, nil
+	return parsedLines, nil
 }
 
 func getSections(parsedLines *[]Line) *[]Section {
 	sections := []Section{}
-	currentSection := Section{GlobalSectionName, []Line{}}
+	currentSection := Section{GlobalSectionName, &[]Line{}}
 
 	for _, line := range *parsedLines {
 		if line.ContentType == SectionLineType {
-			if len(currentSection.Lines) > 0 {
-				sections = append(sections, currentSection)
-			}
-
-			currentSection = Section{line.SectionLine.SectionName, []Line{}}
-		} else {
-			currentSection.Lines = append(currentSection.Lines, line)
+			currentSection = Section{line.SectionLine.SectionName, &[]Line{}}
+			sections = append(sections, currentSection)
 		}
+		*currentSection.Lines = append(*currentSection.Lines, line)
 	}
-
-	sections = append(sections, currentSection)
 
 	return &sections
 }

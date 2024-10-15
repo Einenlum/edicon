@@ -42,24 +42,27 @@ func TestGetParsedIniFile(t *testing.T) {
 	})
 
 	dataProvider := []TestElement{
-		{"PHP", 18, 6},
-		{"CLI Server", 2, 1},
+		{"PHP", 19, 6},
+		{"CLI Server", 3, 1},
 		{"Date", 1, 0},
-		{"mail function", 4, 2},
+		{"mail function", 5, 2},
 	}
 
 	for _, element := range dataProvider {
 		section := GetSectionByName(iniFile.Sections, element.SectionName)
+		if section == nil {
+			t.Error("Could not find section", element.SectionName)
+		}
 
 		t.Run("it parses "+element.SectionName+" lines", func(t *testing.T) {
-			if len(section.Lines) != element.expectedLines {
-				t.Error(fmt.Sprintf("Expected %d lines, got %d", element.expectedLines, len(section.Lines)))
+			if len(*section.Lines) != element.expectedLines {
+				t.Error(fmt.Sprintf("Expected %d lines, got %d", element.expectedLines, len(*section.Lines)))
 			}
 		})
 
 		t.Run("it parses "+element.SectionName+" key values", func(t *testing.T) {
 			keyValues := []Line{}
-			for _, line := range section.Lines {
+			for _, line := range *section.Lines {
 				if line.ContentType == KeyValueType {
 					keyValues = append(keyValues, line)
 				}
@@ -195,14 +198,21 @@ func TestEditParameter(t *testing.T) {
 		})
 	}
 
-	t.Run("it tries to get existing parameter CLI Server[cli_server.color]", func(t *testing.T) {
-		value, err := GetIniParameterFromPath(notation.BracketsNotation, iniFilePath, "CLI Server[cli_server.color]")
+	t.Run("it tries to edit existing parameter CLI Server[cli_server.color]", func(t *testing.T) {
+		iniFile, err := EditIniFile(notation.BracketsNotation, iniFilePath, "CLI Server[cli_server.color]", "black")
 		if err != nil {
-			t.Error(err)
+			t.Fatal(err)
 		}
 
-		if "On" != value {
-			t.Error(fmt.Sprintf("Expected %s got %s", "On", value))
+		fmt.Println("haha")
+
+		keyLine := getKeyLineBySectionName(iniFile.Sections, "CLI Server", "cli_server.color")
+		if keyLine == nil {
+			t.Fatal("Could not find key cli_server.color in section CLI Server")
+		}
+
+		if "black" != keyLine.KeyValue.Value {
+			t.Fatal(fmt.Sprintf("Expected \"black\" got %s", keyLine.KeyValue.Value))
 		}
 	})
 }

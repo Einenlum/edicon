@@ -30,7 +30,7 @@ Longer
 			fmt.Println(err.Error())
 		}
 
-		fmt.Println(ini.OutputIniFile(iniFile, ini.FullOutput))
+		fmt.Println(ini.OutputIniFile(&iniFile, ini.FullOutput))
 	},
 }
 

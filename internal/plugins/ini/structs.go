@@ -1,5 +1,12 @@
 package ini
 
+type LineStatus int
+
+const (
+	Original LineStatus = iota
+	Changed
+)
+
 type LineContentType int
 
 const GlobalSectionName = "__GLOBAL__"
@@ -12,7 +19,7 @@ const (
 
 type Section struct {
 	Name  string
-	Lines []Line
+	Lines *[]Line
 }
 
 type KeyValue struct {
@@ -28,6 +35,7 @@ type SectionLine struct {
 type Line struct {
 	LineNumber    int
 	StringContent string
+	Status        LineStatus
 	ContentType   LineContentType
 	KeyValue      *KeyValue
 	SectionLine   *SectionLine
@@ -38,7 +46,20 @@ type IniFile struct {
 	FilePath string
 }
 
+func (line *Line) SetValue(value string) {
+	line.Status = Changed
+
+	if line.ContentType != KeyValueType {
+		return
+	}
+	line.KeyValue.Value = value
+}
+
 func (line *Line) ToString() string {
+	if line.Status == Original {
+		return line.StringContent
+	}
+
 	var result string
 
 	if line.ContentType == KeyValueType {
