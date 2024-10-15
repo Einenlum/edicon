@@ -2,6 +2,7 @@ package ini
 
 import (
 	"einenlum/edicon/internal/io"
+	"einenlum/edicon/internal/notation"
 	"regexp"
 	"strings"
 )
@@ -84,8 +85,8 @@ func getSections(parsedLines *[]Line) []Section {
 	return sections
 }
 
-func DecomposeKey(notationStyle NotationStyle, key string) []string {
-	if notationStyle == DotNotation {
+func DecomposeKey(notationStyle notation.NotationStyle, key string) []string {
+	if notationStyle == notation.DotNotation {
 		return DecomposeKeyWithDotNotation(key)
 	}
 

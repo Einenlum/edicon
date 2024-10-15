@@ -1,6 +1,7 @@
 package ini
 
 import (
+	"einenlum/edicon/internal/notation"
 	"fmt"
 	"os"
 	"reflect"
@@ -115,7 +116,7 @@ func TestGetParameter(t *testing.T) {
 	missingCases := []string{"PHP.not_a_real_key", "not_a_real_key", "Foobar.baz"}
 	for _, key := range missingCases {
 		t.Run("it tries to get missing parameter "+key, func(t *testing.T) {
-			value, err := GetIniParameterFromPath(DotNotation, iniFilePath, key)
+			value, err := GetIniParameterFromPath(notation.DotNotation, iniFilePath, key)
 			if err == nil {
 				t.Error("Got " + value + " instead")
 			}
@@ -135,7 +136,7 @@ func TestGetParameter(t *testing.T) {
 
 	for key, expectedValue := range validCases {
 		t.Run("it tries to get existing parameter "+key, func(t *testing.T) {
-			value, err := GetIniParameterFromPath(DotNotation, iniFilePath, key)
+			value, err := GetIniParameterFromPath(notation.DotNotation, iniFilePath, key)
 			if err != nil {
 				t.Error(err)
 			}
@@ -147,7 +148,7 @@ func TestGetParameter(t *testing.T) {
 	}
 
 	t.Run("it tries to get existing parameter CLI Server[cli_server.color]", func(t *testing.T) {
-		value, err := GetIniParameterFromPath(BracketsNotation, iniFilePath, "CLI Server[cli_server.color]")
+		value, err := GetIniParameterFromPath(notation.BracketsNotation, iniFilePath, "CLI Server[cli_server.color]")
 		if err != nil {
 			t.Error(err)
 		}

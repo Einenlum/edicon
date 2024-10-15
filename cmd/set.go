@@ -8,8 +8,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// getCmd represents the get command
-var getCmd = &cobra.Command{
+var setCmd = &cobra.Command{
 	Use:   "get",
 	Short: "Get an INI parameter",
 	Long: `Something

@@ -1,14 +1,8 @@
 package ini
 
 import (
+	"einenlum/edicon/internal/notation"
 	"errors"
-)
-
-type NotationStyle int
-
-const (
-	DotNotation = iota
-	BracketsNotation
 )
 
 func GetParsedIniFile(filePath string) (IniFile, error) {
@@ -49,7 +43,7 @@ func getKeyLineBySectionName(sections *[]Section, sectionName string, key string
 	return getKeyLine(section, key)
 }
 
-func EditIniFile(notationStyle NotationStyle, filePath string, key string, value string) (*IniFile, error) {
+func EditIniFile(notationStyle notation.NotationStyle, filePath string, key string, value string) (*IniFile, error) {
 	decomposedKey := DecomposeKey(notationStyle, key)
 
 	iniFile, err := GetParsedIniFile(filePath)
@@ -76,7 +70,7 @@ func EditIniFile(notationStyle NotationStyle, filePath string, key string, value
 	return &iniFile, nil
 }
 
-func GetIniParameterFromPath(notationStyle NotationStyle, filePath string, key string) (string, error) {
+func GetIniParameterFromPath(notationStyle notation.NotationStyle, filePath string, key string) (string, error) {
 	iniFile, err := GetParsedIniFile(filePath)
 	if err != nil {
 		return "", err
