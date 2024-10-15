@@ -109,6 +109,46 @@ func TestPrintIniFile(t *testing.T) {
 	})
 }
 
+func TestGetParameter(t *testing.T) {
+	iniFilePath := "../../../data/php.ini"
+
+	missingCases := []string{"PHP.not_a_real_key", "not_a_real_key", "Foobar.baz"}
+	for _, key := range missingCases {
+		t.Run("it tries to get missing parameter "+key, func(t *testing.T) {
+			value, err := GetIniParameterFromPath(iniFilePath, key)
+			if err == nil {
+				t.Error("Got " + value + " instead")
+			}
+		})
+	}
+
+	validCases := map[string]string{
+		"PHP.engine":           "On",
+		"PHP.precision":        "14",
+		"PHP.disable_classes":  "",
+		"PHP.error_reporting":  "E_ALL & ~E_DEPRECATED & ~E_STRICT",
+		"PHP.default_mimetype": "\"text/html\"",
+		"PHP.zend_extension":   "opcache",
+		// Contains dot, we have to deal with this later
+		// "CLI Server.cli_server_color": "On",
+		"mail function.SMTP":      "localhost",
+		"mail function.smtp_port": "25",
+	}
+
+	for key, expectedValue := range validCases {
+		t.Run("it tries to get existing parameter "+key, func(t *testing.T) {
+			value, err := GetIniParameterFromPath(iniFilePath, key)
+			if err != nil {
+				t.Error(err)
+			}
+
+			if expectedValue != value {
+				t.Error(fmt.Sprintf("Expected %s got %s", expectedValue, value))
+			}
+		})
+	}
+}
+
 func cleanContent(output []byte) string {
 	stringOutput := string(output)
 	stringOutput = removeEmptyTrailingLines(stringOutput)

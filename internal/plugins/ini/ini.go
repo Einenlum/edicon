@@ -68,3 +68,27 @@ func EditIniFile(filePath string, key string, value string) (*IniFile, error) {
 
 	return &iniFile, nil
 }
+
+func GetIniParameterFromPath(filePath string, key string) (string, error) {
+	iniFile, err := GetParsedIniFile(filePath)
+	if err != nil {
+		return "", err
+	}
+
+	decomposedKey := DecomposeKeyWithDotNotation(key)
+	if len(decomposedKey) == 1 {
+		keyLine := getKeyLineBySectionName(&iniFile.Sections, "PHP", decomposedKey[0])
+		if keyLine == nil {
+			return "", errors.New("Key not found")
+		}
+
+		return keyLine.KeyValue.Value, nil
+	} else {
+		keyLine := getKeyLineBySectionName(&iniFile.Sections, decomposedKey[0], decomposedKey[1])
+		if keyLine == nil {
+			return "", errors.New("Key not found")
+		}
+
+		return keyLine.KeyValue.Value, nil
+	}
+}
