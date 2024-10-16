@@ -16,7 +16,7 @@ func TestGetParsedIniFile(t *testing.T) {
 
 	iniFile, err := GetParsedIniFile(filePath)
 	if err != nil {
-		t.Error("Could not read the file", filePath, err.Error())
+		t.Fatal("Could not read the file", filePath, err.Error())
 	}
 
 	type TestElement struct {
@@ -27,7 +27,7 @@ func TestGetParsedIniFile(t *testing.T) {
 
 	t.Run("it parses sections", func(t *testing.T) {
 		if len(*iniFile.Sections) != 4 {
-			t.Error("Expected 4 sections, got", len(*iniFile.Sections))
+			t.Fatal("Expected 4 sections, got", len(*iniFile.Sections))
 		}
 
 		sectionNames := []string{}
@@ -37,7 +37,7 @@ func TestGetParsedIniFile(t *testing.T) {
 
 		expectedSectionNames := []string{"PHP", "CLI Server", "Date", "mail function"}
 		if !reflect.DeepEqual(sectionNames, expectedSectionNames) {
-			t.Error("Expected sections: ", expectedSectionNames, "Real sections:", sectionNames)
+			t.Fatal("Expected sections: ", expectedSectionNames, "Real sections:", sectionNames)
 		}
 	})
 
@@ -51,12 +51,12 @@ func TestGetParsedIniFile(t *testing.T) {
 	for _, element := range dataProvider {
 		section := GetSectionByName(iniFile.Sections, element.SectionName)
 		if section == nil {
-			t.Error("Could not find section", element.SectionName)
+			t.Fatal("Could not find section", element.SectionName)
 		}
 
 		t.Run("it parses "+element.SectionName+" lines", func(t *testing.T) {
 			if len(*section.Lines) != element.expectedLines {
-				t.Error(fmt.Sprintf("Expected %d lines, got %d", element.expectedLines, len(*section.Lines)))
+				t.Fatal(fmt.Sprintf("Expected %d lines, got %d", element.expectedLines, len(*section.Lines)))
 			}
 		})
 
@@ -69,7 +69,7 @@ func TestGetParsedIniFile(t *testing.T) {
 			}
 
 			if len(keyValues) != element.expectedKeyValues {
-				t.Error(fmt.Sprintf("Expected %d key value lines, got %d", element.expectedKeyValues, len(keyValues)))
+				t.Fatal(fmt.Sprintf("Expected %d key value lines, got %d", element.expectedKeyValues, len(keyValues)))
 			}
 		})
 	}
@@ -80,13 +80,13 @@ func TestPrintIniFile(t *testing.T) {
 
 	iniFile, err := GetParsedIniFile(iniFilePath)
 	if err != nil {
-		t.Error("Could not read the file", iniFilePath, err.Error())
+		t.Fatal("Could not read the file", iniFilePath, err.Error())
 	}
 
 	t.Run("it prints the full ini file", func(t *testing.T) {
 		fullIniFileContent, err := os.ReadFile(iniFilePath)
 		if err != nil {
-			t.Error("Could not read the file", iniFilePath, err.Error())
+			t.Fatal("Could not read the file", iniFilePath, err.Error())
 		}
 
 		output := OutputIniFile(&iniFile, FullOutput)
@@ -118,7 +118,7 @@ func TestGetParameter(t *testing.T) {
 
 	missingCases := []string{"PHP.not_a_real_key", "not_a_real_key", "Foobar.baz"}
 	for _, key := range missingCases {
-		t.Run("it tries to get missing parameter "+key, func(t *testing.T) {
+		t.Run("it gets missing parameter "+key, func(t *testing.T) {
 			value, err := GetIniParameterFromPath(notation.DotNotation, iniFilePath, key)
 			if err == nil {
 				t.Error("Got " + value + " instead")
@@ -138,7 +138,7 @@ func TestGetParameter(t *testing.T) {
 	}
 
 	for key, expectedValue := range validCases {
-		t.Run("it tries to get existing parameter "+key, func(t *testing.T) {
+		t.Run("it gets existing parameter "+key, func(t *testing.T) {
 			value, err := GetIniParameterFromPath(notation.DotNotation, iniFilePath, key)
 			if err != nil {
 				t.Error(err)
@@ -150,7 +150,7 @@ func TestGetParameter(t *testing.T) {
 		})
 	}
 
-	t.Run("it tries to get existing parameter CLI Server[cli_server.color]", func(t *testing.T) {
+	t.Run("it gets existing parameter CLI Server[cli_server.color]", func(t *testing.T) {
 		value, err := GetIniParameterFromPath(notation.BracketsNotation, iniFilePath, "CLI Server[cli_server.color]")
 		if err != nil {
 			t.Error(err)
@@ -181,7 +181,7 @@ func TestEditParameter(t *testing.T) {
 		keyName := values[1]
 		newValue := values[2]
 
-		t.Run("it tries to edit existing parameter "+key, func(t *testing.T) {
+		t.Run("it edits existing parameter "+key, func(t *testing.T) {
 			iniFile, err := EditIniFile(notation.DotNotation, iniFilePath, key, newValue)
 			if err != nil {
 				t.Error(err)
@@ -198,7 +198,7 @@ func TestEditParameter(t *testing.T) {
 		})
 	}
 
-	t.Run("it tries to edit existing parameter CLI Server[cli_server.color]", func(t *testing.T) {
+	t.Run("it edits existing parameter CLI Server[cli_server.color]", func(t *testing.T) {
 		iniFile, err := EditIniFile(notation.BracketsNotation, iniFilePath, "CLI Server[cli_server.color]", "black")
 		if err != nil {
 			t.Fatal(err)
