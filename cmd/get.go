@@ -1,7 +1,7 @@
 package cmd
 
 import (
-	"einenlum/edicon/internal/notation"
+	"einenlum/edicon/internal/core"
 	"einenlum/edicon/internal/plugins/ini"
 	"fmt"
 
@@ -23,7 +23,7 @@ Longer
 		if err != nil {
 			fmt.Println(err)
 		}
-		notationStyle := notation.GetNotationStyle(useBrackets)
+		notationStyle := core.GetNotationStyle(useBrackets)
 
 		value, err := ini.GetIniParameterFromPath(notationStyle, file, key)
 		if err != nil {

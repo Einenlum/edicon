@@ -1,7 +1,7 @@
 package ini
 
 import (
-	"einenlum/edicon/internal/notation"
+	"einenlum/edicon/internal/core"
 	"fmt"
 	"os"
 	"reflect"
@@ -119,7 +119,7 @@ func TestGetParameter(t *testing.T) {
 	missingCases := []string{"PHP.not_a_real_key", "not_a_real_key", "Foobar.baz"}
 	for _, key := range missingCases {
 		t.Run("it gets missing parameter "+key, func(t *testing.T) {
-			value, err := GetIniParameterFromPath(notation.DotNotation, iniFilePath, key)
+			value, err := GetIniParameterFromPath(core.DotNotation, iniFilePath, key)
 			if err == nil {
 				t.Error("Got " + value + " instead")
 			}
@@ -139,7 +139,7 @@ func TestGetParameter(t *testing.T) {
 
 	for key, expectedValue := range validCases {
 		t.Run("it gets existing parameter "+key, func(t *testing.T) {
-			value, err := GetIniParameterFromPath(notation.DotNotation, iniFilePath, key)
+			value, err := GetIniParameterFromPath(core.DotNotation, iniFilePath, key)
 			if err != nil {
 				t.Error(err)
 			}
@@ -151,7 +151,7 @@ func TestGetParameter(t *testing.T) {
 	}
 
 	t.Run("it gets existing parameter CLI Server[cli_server.color]", func(t *testing.T) {
-		value, err := GetIniParameterFromPath(notation.BracketsNotation, iniFilePath, "CLI Server[cli_server.color]")
+		value, err := GetIniParameterFromPath(core.BracketsNotation, iniFilePath, "CLI Server[cli_server.color]")
 		if err != nil {
 			t.Error(err)
 		}
@@ -176,7 +176,7 @@ func TestEditParameter(t *testing.T) {
 		"mail function.smtp_port": {"mail function", "smtp_port", "587"},
 	}
 
-	fixturesIniFile := os.OpenFile("../../../data/php.ini", os.O_RDWR, 0644)
+	// fixturesIniFile := os.OpenFile("../../../data/php.ini", os.O_RDWR, 0644)
 
 	for key, values := range cases {
 		sectionName := values[0]
@@ -184,7 +184,7 @@ func TestEditParameter(t *testing.T) {
 		newValue := values[2]
 
 		t.Run("it edits existing parameter "+key, func(t *testing.T) {
-			iniFile, err := EditIniFile(notation.DotNotation, iniFilePath, key, newValue)
+			iniFile, err := EditIniFile(core.DotNotation, iniFilePath, key, newValue)
 			if err != nil {
 				t.Error(err)
 			}
@@ -201,7 +201,7 @@ func TestEditParameter(t *testing.T) {
 	}
 
 	t.Run("it edits existing parameter CLI Server[cli_server.color]", func(t *testing.T) {
-		iniFile, err := EditIniFile(notation.BracketsNotation, iniFilePath, "CLI Server[cli_server.color]", "black")
+		iniFile, err := EditIniFile(core.BracketsNotation, iniFilePath, "CLI Server[cli_server.color]", "black")
 		if err != nil {
 			t.Fatal(err)
 		}

@@ -1,7 +1,7 @@
 package ini
 
 import (
-	"einenlum/edicon/internal/notation"
+	"einenlum/edicon/internal/core"
 	"errors"
 )
 
@@ -72,8 +72,8 @@ func getKeyLineBySectionName(sections *[]Section, sectionName string, key string
 	return getKeyLine(section, key)
 }
 
-func EditIniFile(notationStyle notation.NotationStyle, filePath string, key string, value string) (IniFile, error) {
-	decomposedKey := DecomposeKey(notationStyle, key)
+func EditIniFile(notationStyle core.NotationStyle, filePath string, key string, value string) (IniFile, error) {
+	decomposedKey := core.DecomposeKey(notationStyle, key)
 
 	iniFile, err := GetParsedIniFile(filePath)
 	if err != nil {
@@ -99,13 +99,13 @@ func EditIniFile(notationStyle notation.NotationStyle, filePath string, key stri
 	return iniFile, nil
 }
 
-func GetIniParameterFromPath(notationStyle notation.NotationStyle, filePath string, key string) (string, error) {
+func GetIniParameterFromPath(notationStyle core.NotationStyle, filePath string, key string) (string, error) {
 	iniFile, err := GetParsedIniFile(filePath)
 	if err != nil {
 		return "", err
 	}
 
-	decomposedKey := DecomposeKey(notationStyle, key)
+	decomposedKey := core.DecomposeKey(notationStyle, key)
 	if len(decomposedKey) == 1 {
 		keyLine := getKeyLineBySectionName(iniFile.Sections, "PHP", decomposedKey[0])
 		if keyLine == nil {

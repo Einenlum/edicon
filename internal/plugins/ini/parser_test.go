@@ -1,6 +1,7 @@
 package ini
 
 import (
+	"einenlum/edicon/internal/core"
 	"fmt"
 	"reflect"
 	"testing"
@@ -20,7 +21,7 @@ func TestDecomposeKeyWithDotNotation(t *testing.T) {
 
 	for _, element := range dataProvider {
 		t.Run("it decomposes "+element.inputKey, func(t *testing.T) {
-			actual := DecomposeKeyWithDotNotation(element.inputKey)
+			actual := core.DecomposeKeyWithDotNotation(element.inputKey)
 
 			if !reflect.DeepEqual(element.expected, actual) {
 				t.Error(fmt.Sprintf("Expected %s, got %s", element.expected, actual))
@@ -38,7 +39,7 @@ func TestDecomposeKeyWithBracketNotation(t *testing.T) {
 
 	for _, element := range dataProvider {
 		t.Run("it decomposes "+element.inputKey, func(t *testing.T) {
-			actual := DecomposeKeyWithBracketNotation(element.inputKey)
+			actual := core.DecomposeKeyWithBracketNotation(element.inputKey)
 			t.Log(actual)
 
 			if !reflect.DeepEqual(element.expected, actual) {
