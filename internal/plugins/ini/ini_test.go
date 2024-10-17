@@ -176,6 +176,8 @@ func TestEditParameter(t *testing.T) {
 		"mail function.smtp_port": {"mail function", "smtp_port", "587"},
 	}
 
+	fixturesIniFile := os.OpenFile("../../../data/php.ini", os.O_RDWR, 0644)
+
 	for key, values := range cases {
 		sectionName := values[0]
 		keyName := values[1]
