@@ -10,7 +10,7 @@ import (
 
 var setCmd = &cobra.Command{
 	Use:   "set",
-	Short: "Set an INI parameter",
+	Short: "Set a parameter",
 	Long: `Something
 Longer
 `,
@@ -35,7 +35,5 @@ Longer
 }
 
 func init() {
-	rootCmd.AddCommand(setCmd)
-
 	setCmd.Flags().BoolP("brackets", "b", false, "Use brackts notation \"key[foo.bar]\" instead of dot notation")
 }

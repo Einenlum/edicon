@@ -11,7 +11,7 @@ import (
 // getCmd represents the get command
 var getCmd = &cobra.Command{
 	Use:   "get",
-	Short: "Get an INI parameter",
+	Short: "Get a parameter",
 	Long: `Something
 Longer
 `,
@@ -35,7 +35,5 @@ Longer
 }
 
 func init() {
-	rootCmd.AddCommand(getCmd)
-
 	getCmd.Flags().BoolP("brackets", "b", false, "Use brackts notation \"key[foo.bar]\" instead of dot notation")
 }
