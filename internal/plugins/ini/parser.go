@@ -83,38 +83,38 @@ func getLineFromLineString(lineNumber int, line string) Line {
 	}
 }
 
-func ParseIniFile(file string) ([]Line, error) {
+func ParseIniFile(file string) ([]*Line, error) {
 	fileContent, err := io.GetFileContents(file)
 	if err != nil {
-		return []Line{}, err
+		return []*Line{}, err
 	}
 
-	parsedLines := []Line{}
+	parsedLines := []*Line{}
 	for idx, line := range strings.Split(fileContent, "\n") {
 		lineNumber := idx + 1
 
 		parsedLine := parseLineString(lineNumber, line)
-		parsedLines = append(parsedLines, parsedLine)
+		parsedLines = append(parsedLines, &parsedLine)
 	}
 
 	return parsedLines, nil
 }
 
-func getSections(parsedLines *[]Line) *[]Section {
-	sections := []Section{}
-	currentSection := Section{GlobalSectionName, &[]Line{}}
+func getSections(parsedLines []*Line) []*Section {
+	sections := []*Section{}
+	currentSection := &Section{GlobalSectionName, []*Line{}}
 
-	for _, line := range *parsedLines {
+	for _, line := range parsedLines {
 		if line.ContentType == SectionLineType {
-			currentSection = Section{line.SectionLine.SectionName, &[]Line{}}
+			currentSection = &Section{line.SectionLine.SectionName, []*Line{}}
 			sections = append(sections, currentSection)
 		}
-		*currentSection.Lines = append(*currentSection.Lines, line)
+		currentSection.Lines = append(currentSection.Lines, line)
 	}
 
-	return &sections
+	return sections
 }
 
-func getGlobalSection(sections *[]Section) *Section {
+func getGlobalSection(sections []*Section) *Section {
 	return GetSectionByName(sections, GlobalSectionName)
 }

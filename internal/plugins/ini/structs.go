@@ -19,7 +19,7 @@ const (
 
 type Section struct {
 	Name  string
-	Lines *[]Line
+	Lines []*Line
 }
 
 type KeyValue struct {
@@ -42,7 +42,7 @@ type Line struct {
 }
 
 type IniFile struct {
-	Sections *[]Section
+	Sections []*Section
 	FilePath string
 }
 

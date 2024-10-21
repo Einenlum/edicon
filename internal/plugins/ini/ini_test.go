@@ -2,13 +2,16 @@ package ini
 
 import (
 	"einenlum/edicon/internal/core"
+	"einenlum/edicon/internal/io"
 	"fmt"
 	"os"
 	"reflect"
 	"strings"
 	"testing"
 
-	"github.com/google/go-cmp/cmp"
+	// "github.com/google/go-cmp/cmp"
+	// "github.com/sergi/go-diff/diffmatchpatch"
+	"github.com/pmezard/go-difflib/difflib"
 )
 
 func TestGetParsedIniFile(t *testing.T) {
@@ -26,12 +29,12 @@ func TestGetParsedIniFile(t *testing.T) {
 	}
 
 	t.Run("it parses sections", func(t *testing.T) {
-		if len(*iniFile.Sections) != 4 {
-			t.Fatal("Expected 4 sections, got", len(*iniFile.Sections))
+		if len(iniFile.Sections) != 4 {
+			t.Fatal("Expected 4 sections, got", len(iniFile.Sections))
 		}
 
 		sectionNames := []string{}
-		for _, section := range *iniFile.Sections {
+		for _, section := range iniFile.Sections {
 			sectionNames = append(sectionNames, section.Name)
 		}
 
@@ -55,14 +58,14 @@ func TestGetParsedIniFile(t *testing.T) {
 		}
 
 		t.Run("it parses "+element.SectionName+" lines", func(t *testing.T) {
-			if len(*section.Lines) != element.expectedLines {
-				t.Fatal(fmt.Sprintf("Expected %d lines, got %d", element.expectedLines, len(*section.Lines)))
+			if len(section.Lines) != element.expectedLines {
+				t.Fatal(fmt.Sprintf("Expected %d lines, got %d", element.expectedLines, len(section.Lines)))
 			}
 		})
 
 		t.Run("it parses "+element.SectionName+" key values", func(t *testing.T) {
-			keyValues := []Line{}
-			for _, line := range *section.Lines {
+			keyValues := []*Line{}
+			for _, line := range section.Lines {
 				if line.ContentType == KeyValueType {
 					keyValues = append(keyValues, line)
 				}
@@ -90,10 +93,10 @@ func TestPrintIniFile(t *testing.T) {
 		}
 
 		output := OutputIniFile(&iniFile, FullOutput)
-		diff := cmp.Diff(cleanContent(fullIniFileContent), removeEmptyTrailingLines(output))
+		diffOutput, minusLines, plusLines := getDiff(cleanContent(fullIniFileContent), removeEmptyTrailingLines(output))
 
-		if diff != "" {
-			t.Errorf("Mismatch (-expected +actual):\n%s", diff)
+		if len(minusLines) != 0 || len(plusLines) != 0 {
+			t.Fatal("The diff should be empty. Diff: ", diffOutput)
 		}
 	})
 
@@ -105,10 +108,10 @@ func TestPrintIniFile(t *testing.T) {
 
 		output := OutputIniFile(&iniFile, KeyValuesOnlyOutput)
 
-		diff := cmp.Diff(cleanContent(keyValuesFileContent), removeEmptyTrailingLines(output))
+		diffOutput, minusLines, plusLines := getDiff(cleanContent(keyValuesFileContent), removeEmptyTrailingLines(output))
 
-		if diff != "" {
-			t.Errorf("Mismatch (-expected +actual):\n%s", diff)
+		if len(minusLines) != 0 || len(plusLines) != 0 {
+			t.Fatal("The diff should be empty. Diff: ", diffOutput)
 		}
 	})
 }
@@ -166,36 +169,107 @@ func TestEditParameter(t *testing.T) {
 	iniFilePath := "../../../data/php.ini"
 
 	cases := map[string][]string{
-		"PHP.engine":              {"PHP", "engine", "Off"},
-		"PHP.precision":           {"PHP", "precision", "140"},
-		"PHP.disable_classes":     {"PHP", "disable_classes", "myclass"},
-		"PHP.error_reporting":     {"PHP", "error_reporting", "E_ALL"},
-		"PHP.default_mimetype":    {"PHP", "default_mimetype", "\"text/plain\""},
-		"PHP.zend_extension":      {"PHP", "zend_extension", "opcache.so"},
-		"mail function.SMTP":      {"mail function", "SMTP", "smtp.gmail.com"},
-		"mail function.smtp_port": {"mail function", "smtp_port", "587"},
+		"PHP.engine": {
+			"PHP",
+			"engine",
+			"Off",
+			"engine = On",
+			"engine=Off",
+		},
+		"PHP.precision": {
+			"PHP",
+			"precision",
+			"140",
+			"precision = 14",
+			"precision=140",
+		},
+		"PHP.disable_classes": {
+			"PHP",
+			"disable_classes",
+			"myclass",
+			"disable_classes =",
+			"disable_classes=myclass",
+		},
+		"PHP.error_reporting": {
+			"PHP",
+			"error_reporting",
+			"E_ALL",
+			"error_reporting = E_ALL & ~E_DEPRECATED & ~E_STRICT",
+			"error_reporting=E_ALL",
+		},
+		"PHP.default_mimetype": {
+			"PHP",
+			"default_mimetype",
+			"\"text/plain\"",
+			"default_mimetype = \"text/html\"",
+			"default_mimetype=\"text/plain\"",
+		},
+		"PHP.zend_extension": {
+			"PHP",
+			"zend_extension",
+			"opcache.so",
+			"zend_extension=opcache",
+			"zend_extension=opcache.so",
+		},
+		"mail function.SMTP": {
+			"mail function",
+			"SMTP",
+			"smtp.gmail.com",
+			"SMTP = localhost",
+			"SMTP=smtp.gmail.com",
+		},
+		"mail function.smtp_port": {
+			"mail function",
+			"smtp_port",
+			"587",
+			"smtp_port = 25",
+			"smtp_port=587",
+		},
 	}
 
-	// fixturesIniFile := os.OpenFile("../../../data/php.ini", os.O_RDWR, 0644)
+	fixturesIniFile, err := io.GetFileContents("../../../data/php.ini")
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	for key, values := range cases {
 		sectionName := values[0]
 		keyName := values[1]
 		newValue := values[2]
+		removedLine := values[3]
+		expectedLine := values[4]
 
 		t.Run("it edits existing parameter "+key, func(t *testing.T) {
 			iniFile, err := EditIniFile(core.DotNotation, iniFilePath, key, newValue)
 			if err != nil {
-				t.Error(err)
+				t.Fatal(err)
 			}
 
 			keyLine := getKeyLineBySectionName(iniFile.Sections, sectionName, keyName)
 			if keyLine == nil {
-				t.Error(fmt.Sprintf("Could not find key %s in section %s", keyName, sectionName))
+				t.Fatal(fmt.Sprintf("Could not find key %s in section %s", keyName, sectionName))
 			}
 
 			if newValue != keyLine.KeyValue.Value {
-				t.Error(fmt.Sprintf("Expected %s got %s", newValue, keyLine.KeyValue.Value))
+				t.Fatal(fmt.Sprintf("Expected %s got %s", newValue, keyLine.KeyValue.Value))
+			}
+
+			output := OutputIniFile(iniFile, FullOutput)
+			diffOutput, minusLines, plusLines := getDiff(
+				cleanContent([]byte(fixturesIniFile)),
+				removeEmptyTrailingLines(output),
+			)
+
+			if len(minusLines) != 1 || len(plusLines) != 1 {
+				t.Fatal("Expected one line to be added and one line to be removed. Diff: ", diffOutput)
+			}
+
+			if minusLines[0] != strings.TrimRight(removedLine, "\n") {
+				t.Fatal(fmt.Sprintf("Expected removed line to be \"%s\" got \"%s\"", removedLine, minusLines[0]))
+			}
+
+			if plusLines[0] != expectedLine {
+				t.Fatal(fmt.Sprintf("Expected plus line to be \"%s\" got \"%s\"", expectedLine, plusLines[0]))
 			}
 		})
 	}
@@ -206,8 +280,6 @@ func TestEditParameter(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		fmt.Println("haha")
-
 		keyLine := getKeyLineBySectionName(iniFile.Sections, "CLI Server", "cli_server.color")
 		if keyLine == nil {
 			t.Fatal("Could not find key cli_server.color in section CLI Server")
@@ -217,6 +289,18 @@ func TestEditParameter(t *testing.T) {
 			t.Fatal(fmt.Sprintf("Expected \"black\" got %s", keyLine.KeyValue.Value))
 		}
 	})
+}
+
+func getLinesStartingWith(lines []string, prefix string) []string {
+	filteredLines := []string{}
+
+	for _, line := range lines {
+		if strings.HasPrefix(line, prefix) {
+			filteredLines = append(filteredLines, line)
+		}
+	}
+
+	return filteredLines
 }
 
 func cleanContent(output []byte) string {
@@ -238,4 +322,47 @@ func removeEmptyTrailingLines(output string) string {
 	}
 
 	return strings.TrimRight(output[:lastNonEmptyLineNumber+1], "\n")
+}
+
+func getDiff(expected string, actual string) (
+	diffOutput string,
+	minusLines []string,
+	plusLines []string,
+) {
+	diff := difflib.UnifiedDiff{
+		A:        difflib.SplitLines(expected),
+		B:        difflib.SplitLines(actual),
+		Context:  0,
+		FromFile: "Expected",
+		ToFile:   "Actual",
+	}
+	diffOutput, _ = difflib.GetUnifiedDiffString(diff)
+	lines := difflib.SplitLines(diffOutput)
+	if len(lines) < 3 {
+		return diffOutput, minusLines, plusLines
+	}
+	lines = lines[3:]
+
+	for _, line := range lines {
+		if strings.HasPrefix(line, "-") {
+			minusLines = append(
+				minusLines,
+				trimLine(strings.TrimLeft(line, "-")),
+			)
+		} else if strings.HasPrefix(line, "+") {
+			plusLines = append(
+				plusLines,
+				trimLine(strings.TrimLeft(line, "+")),
+			)
+		}
+	}
+
+	return diffOutput, minusLines, plusLines
+}
+
+func trimLine(line string) string {
+	trimmed := strings.TrimRight(line, "\n")
+	trimmed = strings.TrimSpace(trimmed)
+
+	return trimmed
 }
