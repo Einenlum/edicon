@@ -92,7 +92,7 @@ func TestPrintIniFile(t *testing.T) {
 			t.Fatal("Could not read the file", iniFilePath, err.Error())
 		}
 
-		output := OutputIniFile(&iniFile, FullOutput)
+		output := OutputConfigFile(&iniFile, FullOutput)
 		diffOutput, minusLines, plusLines := getDiff(cleanContent(fullIniFileContent), removeEmptyTrailingLines(output))
 
 		if len(minusLines) != 0 || len(plusLines) != 0 {
@@ -106,7 +106,7 @@ func TestPrintIniFile(t *testing.T) {
 			t.Error("Could not read the file", iniFilePath, err.Error())
 		}
 
-		output := OutputIniFile(&iniFile, KeyValuesOnlyOutput)
+		output := OutputConfigFile(&iniFile, KeyValuesOnlyOutput)
 
 		diffOutput, minusLines, plusLines := getDiff(cleanContent(keyValuesFileContent), removeEmptyTrailingLines(output))
 
@@ -122,7 +122,7 @@ func TestGetParameter(t *testing.T) {
 	missingCases := []string{"PHP.not_a_real_key", "not_a_real_key", "Foobar.baz"}
 	for _, key := range missingCases {
 		t.Run("it gets missing parameter "+key, func(t *testing.T) {
-			value, err := GetIniParameterFromPath(core.DotNotation, iniFilePath, key)
+			value, err := GetParameterFromPath(core.DotNotation, iniFilePath, key)
 			if err == nil {
 				t.Error("Got " + value + " instead")
 			}
@@ -142,7 +142,7 @@ func TestGetParameter(t *testing.T) {
 
 	for key, expectedValue := range validCases {
 		t.Run("it gets existing parameter "+key, func(t *testing.T) {
-			value, err := GetIniParameterFromPath(core.DotNotation, iniFilePath, key)
+			value, err := GetParameterFromPath(core.DotNotation, iniFilePath, key)
 			if err != nil {
 				t.Error(err)
 			}
@@ -154,7 +154,7 @@ func TestGetParameter(t *testing.T) {
 	}
 
 	t.Run("it gets existing parameter CLI Server[cli_server.color]", func(t *testing.T) {
-		value, err := GetIniParameterFromPath(core.BracketsNotation, iniFilePath, "CLI Server[cli_server.color]")
+		value, err := GetParameterFromPath(core.BracketsNotation, iniFilePath, "CLI Server[cli_server.color]")
 		if err != nil {
 			t.Error(err)
 		}
@@ -240,7 +240,7 @@ func TestEditParameter(t *testing.T) {
 		expectedLine := values[4]
 
 		t.Run("it edits existing parameter "+key, func(t *testing.T) {
-			iniFile, err := EditIniFile(core.DotNotation, iniFilePath, key, newValue)
+			iniFile, err := EditConfigFile(core.DotNotation, iniFilePath, key, newValue)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -254,7 +254,7 @@ func TestEditParameter(t *testing.T) {
 				t.Fatal(fmt.Sprintf("Expected %s got %s", newValue, keyLine.KeyValue.Value))
 			}
 
-			output := OutputIniFile(iniFile, FullOutput)
+			output := OutputConfigFile(iniFile, FullOutput)
 			diffOutput, minusLines, plusLines := getDiff(
 				cleanContent([]byte(fixturesIniFile)),
 				removeEmptyTrailingLines(output),
@@ -275,7 +275,7 @@ func TestEditParameter(t *testing.T) {
 	}
 
 	t.Run("it edits existing parameter CLI Server[cli_server.color]", func(t *testing.T) {
-		iniFile, err := EditIniFile(core.BracketsNotation, iniFilePath, "CLI Server[cli_server.color]", "black")
+		iniFile, err := EditConfigFile(core.BracketsNotation, iniFilePath, "CLI Server[cli_server.color]", "black")
 		if err != nil {
 			t.Fatal(err)
 		}

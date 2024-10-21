@@ -25,12 +25,12 @@ Longer
 		}
 		notationStyle := core.GetNotationStyle(useBrackets)
 
-		iniFile, err := ini.EditIniFile(notationStyle, file, key, value)
+		iniFile, err := ini.EditConfigFile(notationStyle, file, key, value)
 		if err != nil {
 			fmt.Println(err.Error())
 		}
 
-		fmt.Println(ini.OutputIniFile(iniFile, ini.FullOutput))
+		fmt.Println(ini.OutputConfigFile(iniFile, ini.FullOutput))
 	},
 }
 

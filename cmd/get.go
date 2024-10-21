@@ -25,7 +25,7 @@ Longer
 		}
 		notationStyle := core.GetNotationStyle(useBrackets)
 
-		value, err := ini.GetIniParameterFromPath(notationStyle, file, key)
+		value, err := ini.GetParameterFromPath(notationStyle, file, key)
 		if err != nil {
 			fmt.Println(err.Error())
 		}

@@ -12,7 +12,7 @@ const (
 	KeyValuesOnlyOutput
 )
 
-func OutputIniFile(iniFile *IniFile, outputType OutputType) string {
+func OutputConfigFile(iniFile *IniFile, outputType OutputType) string {
 	output := ""
 
 	shouldBePrinted := func(line Line) bool {
@@ -72,7 +72,7 @@ func getKeyLineBySectionName(sections []*Section, sectionName string, key string
 	return getKeyLine(section, key)
 }
 
-func EditIniFile(
+func EditConfigFile(
 	notationStyle core.NotationStyle,
 	filePath string,
 	key string,
@@ -104,7 +104,7 @@ func EditIniFile(
 	return &iniFile, nil
 }
 
-func GetIniParameterFromPath(notationStyle core.NotationStyle, filePath string, key string) (string, error) {
+func GetParameterFromPath(notationStyle core.NotationStyle, filePath string, key string) (string, error) {
 	iniFile, err := GetParsedIniFile(filePath)
 	if err != nil {
 		return "", err
