@@ -84,16 +84,17 @@ func (line *Line) ToString() string {
 	return line.StringContent
 }
 
-func (config *IniConfiguration) OutputFile(outputType int) (string, error) {
-	iniOutputType := OutputType(outputType)
+func (config *IniConfiguration) OutputFile(outputType core.OutputType) (string, error) {
+	iniOutputType, err := toIniOutputType(outputType)
+	if err != nil {
+		return "", err
+	}
 
 	return OutputConfigFile(config, iniOutputType), nil
 }
 
-func (config *IniConfiguration) WriteToFile(filepath string, outputType int) error {
-	iniOutputType := OutputType(outputType)
-
-	output, err := config.OutputFile(int(iniOutputType))
+func (config *IniConfiguration) WriteToFile(filepath string, outputType core.OutputType) error {
+	output, err := config.OutputFile(outputType)
 	if err != nil {
 		return err
 	}

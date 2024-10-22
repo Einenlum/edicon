@@ -5,19 +5,30 @@ import (
 	"einenlum/edicon/internal/plugins/ini"
 	"errors"
 	"fmt"
+
+	"github.com/spf13/cobra"
 )
 
-type ConfigurationType int
+func GetConfiguratorFromParentCmd(parentCmd *cobra.Command) (core.Configurator, error) {
+	if parentCmd == nil {
+		return nil, errors.New("Parent command is nil")
+	}
 
-const (
-	Php = iota
-)
+	parentConfigName := parentCmd.Use
 
-func GetConfigurator(ctype ConfigurationType) (core.Configurator, error) {
+	configurator, err := getConfigurator(parentConfigName)
+	if err != nil {
+		return nil, errors.New("Configurator not found")
+	}
+
+	return configurator, nil
+}
+
+func getConfigurator(ctype string) (core.Configurator, error) {
 	switch ctype {
-	case Php:
+	case "php":
 		return ini.IniConfigurator{}, nil
 	default:
-		return nil, errors.New(fmt.Sprintf("No configurator found for %d", ctype))
+		return nil, errors.New(fmt.Sprintf("No configurator found for %s", ctype))
 	}
 }

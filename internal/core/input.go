@@ -5,6 +5,13 @@ import (
 	"strings"
 )
 
+type OutputType int
+
+const (
+	FullOutput OutputType = iota
+	MeaningFullOutput
+)
+
 func DecomposeKey(notationStyle NotationStyle, key string) []string {
 	if notationStyle == DotNotation {
 		return DecomposeKeyWithDotNotation(key)

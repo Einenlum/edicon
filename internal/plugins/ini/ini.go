@@ -3,6 +3,7 @@ package ini
 import (
 	"einenlum/edicon/internal/core"
 	"errors"
+	"fmt"
 )
 
 type OutputType int
@@ -11,6 +12,19 @@ const (
 	FullOutput OutputType = iota
 	KeyValuesOnlyOutput
 )
+
+func toIniOutputType(otype core.OutputType) (OutputType, error) {
+	switch otype {
+	case core.FullOutput:
+		return FullOutput, nil
+	case core.MeaningFullOutput:
+		return KeyValuesOnlyOutput, nil
+	default:
+		err := fmt.Sprintf("Invalid output type: %d", otype)
+
+		return FullOutput, errors.New(err)
+	}
+}
 
 func OutputConfigFile(iniFile *IniConfiguration, outputType OutputType) string {
 	output := ""

@@ -2,7 +2,7 @@ package cmd
 
 import (
 	"einenlum/edicon/internal/core"
-	"einenlum/edicon/internal/plugins/ini"
+	"einenlum/edicon/internal/plugins"
 	"fmt"
 
 	"github.com/spf13/cobra"
@@ -16,8 +16,12 @@ var getCmd = &cobra.Command{
 Longer
 `,
 	Run: func(cmd *cobra.Command, args []string) {
-		key := args[0]
-		file := args[1]
+		configurator, err := plugins.GetConfiguratorFromParentCmd(cmd.Parent())
+		if err != nil {
+			panic(err)
+		}
+
+		key, file := getGetCmdArguments(args)
 
 		useBrackets, err := cmd.Flags().GetBool("brackets")
 		if err != nil {
@@ -25,13 +29,24 @@ Longer
 		}
 		notationStyle := core.GetNotationStyle(useBrackets)
 
-		value, err := ini.GetParameterFromPath(notationStyle, file, key)
+		value, err := configurator.GetParameter(notationStyle, file, key)
 		if err != nil {
 			fmt.Println(err.Error())
 		}
 
 		fmt.Println(value)
 	},
+}
+
+func getGetCmdArguments(args []string) (string, string) {
+	if len(args) < 2 {
+		panic("Not enough arguments")
+	}
+
+	key := args[0]
+	file := args[1]
+
+	return key, file
 }
 
 func init() {
