@@ -78,3 +78,12 @@ func (line *Line) ToString() string {
 
 	return line.StringContent
 }
+
+// type IniConfigurator struct{}
+
+// func (configurator *IniConfigurator) GetParameter(
+// 	notationStyle NotationStyle,
+// 	filePath string,
+// 	key string,
+// ) (string, error) {
+// }
