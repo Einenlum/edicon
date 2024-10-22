@@ -40,6 +40,7 @@ type SectionLine struct {
 type Line struct {
 	LineNumber    int
 	StringContent string
+	SpacePrefix   string
 	Status        LineStatus
 	ContentType   LineContentType
 	KeyValue      *KeyValue
@@ -68,7 +69,7 @@ func (line *Line) ToString() string {
 	var result string
 
 	if line.ContentType == KeyValueType {
-		result = line.KeyValue.Key + "=" + line.KeyValue.Value
+		result = line.SpacePrefix + line.KeyValue.Key + "=" + line.KeyValue.Value
 		// prepend comment symbol if line is commented
 		if line.KeyValue.Commented {
 			result = ";" + result
@@ -78,7 +79,7 @@ func (line *Line) ToString() string {
 	}
 
 	if line.ContentType == SectionLineType {
-		return "[" + line.SectionLine.SectionName + "]"
+		return line.SpacePrefix + "[" + line.SectionLine.SectionName + "]"
 	}
 
 	return line.StringContent

@@ -7,14 +7,21 @@ import (
 )
 
 func parseLineString(lineNumber int, lineString string) Line {
-	// trim lineString
-	lineString = strings.TrimSpace(lineString)
+	var spacePrefix string
+
+	trimmedLineString := strings.TrimSpace(lineString)
+	if trimmedLineString == lineString {
+		spacePrefix = ""
+	} else {
+		spacePrefix = lineString[:len(lineString)-len(trimmedLineString)]
+	}
 
 	// Check if line is empty
-	if len(lineString) == 0 {
+	if len(trimmedLineString) == 0 {
 		return Line{
 			lineNumber,
 			lineString,
+			spacePrefix,
 			Original,
 			OtherType,
 			nil,
@@ -23,10 +30,11 @@ func parseLineString(lineNumber int, lineString string) Line {
 	}
 
 	// Check if line is a comment
-	if strings.HasPrefix(lineString, ";") {
+	if strings.HasPrefix(trimmedLineString, ";") {
 		return Line{
 			lineNumber,
 			lineString,
+			spacePrefix,
 			Original,
 			OtherType,
 			nil,
@@ -35,14 +43,15 @@ func parseLineString(lineNumber int, lineString string) Line {
 	}
 
 	// Check if line is a section
-	if strings.HasPrefix(lineString, "[") && strings.HasSuffix(lineString, "]") {
-		sectionName := strings.Trim(lineString, "[]")
+	if strings.HasPrefix(trimmedLineString, "[") && strings.HasSuffix(trimmedLineString, "]") {
+		sectionName := strings.Trim(trimmedLineString, "[]")
 
 		sectionLine := SectionLine{sectionName}
 
 		return Line{
 			lineNumber,
 			lineString,
+			spacePrefix,
 			Original,
 			SectionLineType,
 			nil,
@@ -51,8 +60,8 @@ func parseLineString(lineNumber int, lineString string) Line {
 	}
 
 	// Check if line is a key value pair
-	if strings.Contains(lineString, "=") {
-		keyValue := strings.Split(lineString, "=")
+	if strings.Contains(trimmedLineString, "=") {
+		keyValue := strings.Split(trimmedLineString, "=")
 
 		key := strings.TrimSpace(keyValue[0])
 		value := strings.TrimSpace(keyValue[1])
@@ -60,6 +69,7 @@ func parseLineString(lineNumber int, lineString string) Line {
 		return Line{
 			lineNumber,
 			lineString,
+			spacePrefix,
 			Original,
 			KeyValueType,
 			&KeyValue{key, value, false},
@@ -70,6 +80,7 @@ func parseLineString(lineNumber int, lineString string) Line {
 	return Line{
 		lineNumber,
 		lineString,
+		spacePrefix,
 		Original,
 		OtherType,
 		nil,
