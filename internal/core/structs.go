@@ -2,6 +2,8 @@ package core
 
 type Configuration interface {
 	OutputFile(outputType int) (string, error)
+
+	WriteToFile(filepath string, outputType int) error
 }
 
 type Configurator interface {

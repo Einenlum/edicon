@@ -2,6 +2,7 @@ package ini
 
 import (
 	"einenlum/edicon/internal/core"
+	"einenlum/edicon/internal/io"
 )
 
 type LineStatus int
@@ -87,6 +88,19 @@ func (config *IniConfiguration) OutputFile(outputType int) (string, error) {
 	iniOutputType := OutputType(outputType)
 
 	return OutputConfigFile(config, iniOutputType), nil
+}
+
+func (config *IniConfiguration) WriteToFile(filepath string, outputType int) error {
+	iniOutputType := OutputType(outputType)
+
+	output, err := config.OutputFile(int(iniOutputType))
+	if err != nil {
+		return err
+	}
+
+	err = io.WriteFileContents(filepath, output)
+
+	return err
 }
 
 type IniConfigurator struct{}
