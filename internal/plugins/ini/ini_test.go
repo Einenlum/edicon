@@ -10,17 +10,18 @@ import (
 	"github.com/einenlum/edicon/internal/core"
 	"github.com/einenlum/edicon/internal/io"
 
-	// "github.com/google/go-cmp/cmp"
-	// "github.com/sergi/go-diff/diffmatchpatch"
 	"github.com/pmezard/go-difflib/difflib"
 )
 
-func TestGetParsedIniFile(t *testing.T) {
-	filePath := "../../../data/php.ini"
+const (
+	PHP_FILE_PATH                 = "../../../data/ini/php.ini"
+	PHP_KEY_VALUES_ONLY_FILE_PATH = "../../../data/ini/php_key_values_only.ini"
+)
 
-	iniFile, err := GetParsedIniFile(filePath)
+func TestGetParsedIniFile(t *testing.T) {
+	iniFile, err := GetParsedIniFile(PHP_FILE_PATH)
 	if err != nil {
-		t.Fatal("Could not read the file", filePath, err.Error())
+		t.Fatal("Could not read the file", PHP_FILE_PATH, err.Error())
 	}
 
 	type TestElement struct {
@@ -80,17 +81,15 @@ func TestGetParsedIniFile(t *testing.T) {
 }
 
 func TestPrintIniFile(t *testing.T) {
-	iniFilePath := "../../../data/php.ini"
-
-	iniFile, err := GetParsedIniFile(iniFilePath)
+	iniFile, err := GetParsedIniFile(PHP_FILE_PATH)
 	if err != nil {
-		t.Fatal("Could not read the file", iniFilePath, err.Error())
+		t.Fatal("Could not read the file", PHP_FILE_PATH, err.Error())
 	}
 
 	t.Run("it prints the full ini file", func(t *testing.T) {
-		fullIniFileContent, err := os.ReadFile(iniFilePath)
+		fullIniFileContent, err := os.ReadFile(PHP_FILE_PATH)
 		if err != nil {
-			t.Fatal("Could not read the file", iniFilePath, err.Error())
+			t.Fatal("Could not read the file", PHP_FILE_PATH, err.Error())
 		}
 
 		output := OutputConfigFile(&iniFile, FullOutput)
@@ -102,9 +101,9 @@ func TestPrintIniFile(t *testing.T) {
 	})
 
 	t.Run("it prints the key values only", func(t *testing.T) {
-		keyValuesFileContent, err := os.ReadFile("../../../data/php_key_values_only.ini")
+		keyValuesFileContent, err := os.ReadFile(PHP_KEY_VALUES_ONLY_FILE_PATH)
 		if err != nil {
-			t.Error("Could not read the file", iniFilePath, err.Error())
+			t.Error("Could not read the file", PHP_KEY_VALUES_ONLY_FILE_PATH, err.Error())
 		}
 
 		output := OutputConfigFile(&iniFile, KeyValuesOnlyOutput)
@@ -118,12 +117,10 @@ func TestPrintIniFile(t *testing.T) {
 }
 
 func TestGetParameter(t *testing.T) {
-	iniFilePath := "../../../data/php.ini"
-
 	missingCases := []string{"PHP.not_a_real_key", "not_a_real_key", "Foobar.baz"}
 	for _, key := range missingCases {
 		t.Run("it gets missing parameter "+key, func(t *testing.T) {
-			value, err := GetParameterFromPath(core.DotNotation, iniFilePath, key)
+			value, err := GetParameterFromPath(core.DotNotation, PHP_FILE_PATH, key)
 			if err == nil {
 				t.Error("Got " + value + " instead")
 			}
@@ -143,7 +140,7 @@ func TestGetParameter(t *testing.T) {
 
 	for key, expectedValue := range validCases {
 		t.Run("it gets existing parameter "+key, func(t *testing.T) {
-			value, err := GetParameterFromPath(core.DotNotation, iniFilePath, key)
+			value, err := GetParameterFromPath(core.DotNotation, PHP_FILE_PATH, key)
 			if err != nil {
 				t.Error(err)
 			}
@@ -155,7 +152,7 @@ func TestGetParameter(t *testing.T) {
 	}
 
 	t.Run("it gets existing parameter CLI Server[cli_server.color]", func(t *testing.T) {
-		value, err := GetParameterFromPath(core.BracketsNotation, iniFilePath, "CLI Server[cli_server.color]")
+		value, err := GetParameterFromPath(core.BracketsNotation, PHP_FILE_PATH, "CLI Server[cli_server.color]")
 		if err != nil {
 			t.Error(err)
 		}
@@ -167,8 +164,6 @@ func TestGetParameter(t *testing.T) {
 }
 
 func TestEditParameter(t *testing.T) {
-	iniFilePath := "../../../data/php.ini"
-
 	cases := map[string][]string{
 		"PHP.engine": {
 			"PHP",
@@ -228,7 +223,7 @@ func TestEditParameter(t *testing.T) {
 		},
 	}
 
-	fixturesIniFile, err := io.GetFileContents("../../../data/php.ini")
+	fixturesIniFile, err := io.GetFileContents("../../../data/ini/php.ini")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -241,7 +236,7 @@ func TestEditParameter(t *testing.T) {
 		expectedLine := values[4]
 
 		t.Run("it edits existing parameter "+key, func(t *testing.T) {
-			iniFile, err := EditConfigFile(core.DotNotation, iniFilePath, key, newValue)
+			iniFile, err := EditConfigFile(core.DotNotation, PHP_FILE_PATH, key, newValue)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -276,7 +271,7 @@ func TestEditParameter(t *testing.T) {
 	}
 
 	t.Run("it edits existing parameter CLI Server[cli_server.color]", func(t *testing.T) {
-		iniFile, err := EditConfigFile(core.BracketsNotation, iniFilePath, "CLI Server[cli_server.color]", "black")
+		iniFile, err := EditConfigFile(core.BracketsNotation, PHP_FILE_PATH, "CLI Server[cli_server.color]", "black")
 		if err != nil {
 			t.Fatal(err)
 		}
