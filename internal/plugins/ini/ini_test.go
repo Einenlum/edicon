@@ -15,7 +15,9 @@ import (
 
 const (
 	PHP_FILE_PATH                 = "../../../data/ini/php.ini"
+	INI_FILE_PATH                 = "../../../data/ini/ini.ini"
 	PHP_KEY_VALUES_ONLY_FILE_PATH = "../../../data/ini/php_key_values_only.ini"
+	INI_KEY_VALUES_ONLY_FILE_PATH = "../../../data/ini/ini_key_values_only.ini"
 )
 
 func testParseSections(t *testing.T, filepath string, expectedSectionNames []string) {
@@ -187,9 +189,9 @@ func TestGetParsedIniFile(t *testing.T) {
 		testParseSections(t, PHP_FILE_PATH, []string{"PHP", "CLI Server", "Date", "mail function"})
 	})
 
-	// t.Run("it parses php sections", func(t *testing.T) {
-	//     testParseSections(t, PHP_FILE_PATH, []string{"PHP", "CLI Server", "Date", "mail function"})
-	// })
+	t.Run("it parses ini sections", func(t *testing.T) {
+		testParseSections(t, INI_FILE_PATH, []string{"user", "core", "alias", "push"})
+	})
 
 	dataProvider := []TestElement{
 		{"PHP", 19, 6},
@@ -199,31 +201,59 @@ func TestGetParsedIniFile(t *testing.T) {
 	}
 
 	for _, element := range dataProvider {
-		t.Run("it parses "+element.SectionName+" section", func(t *testing.T) {
+		t.Run("it parses PHP: "+element.SectionName+" section", func(t *testing.T) {
 			testParseSection(t, PHP_FILE_PATH, element.SectionName, element.expectedLines, element.expectedKeyValues)
+		})
+	}
+
+	dataProvider = []TestElement{
+		{"user", 4, 2},
+		{"core", 7, 4},
+		{"alias", 6, 4},
+		{"push", 5, 1},
+	}
+
+	for _, element := range dataProvider {
+		t.Run("it parses INI: "+element.SectionName+" section", func(t *testing.T) {
+			testParseSection(t, INI_FILE_PATH, element.SectionName, element.expectedLines, element.expectedKeyValues)
 		})
 	}
 }
 
 func TestPrintIniFile(t *testing.T) {
-	t.Run("it prints the full ini file", func(t *testing.T) {
+	t.Run("PHP: it prints the full ini file", func(t *testing.T) {
 		testPrintFullFile(t, PHP_FILE_PATH, PHP_FILE_PATH, FullOutput)
 	})
 
-	t.Run("it prints the key values only", func(t *testing.T) {
+	t.Run("PHP: it prints the key values only", func(t *testing.T) {
 		testPrintFullFile(t, PHP_FILE_PATH, PHP_KEY_VALUES_ONLY_FILE_PATH, KeyValuesOnlyOutput)
+	})
+
+	t.Run("INI: it prints the full ini file", func(t *testing.T) {
+		testPrintFullFile(t, INI_FILE_PATH, INI_FILE_PATH, FullOutput)
+	})
+
+	t.Run("INI: it prints the key values only", func(t *testing.T) {
+		testPrintFullFile(t, INI_FILE_PATH, INI_KEY_VALUES_ONLY_FILE_PATH, KeyValuesOnlyOutput)
 	})
 }
 
 func TestGetParameter(t *testing.T) {
-	missingCases := []string{"PHP.not_a_real_key", "not_a_real_key", "Foobar.baz"}
-	for _, key := range missingCases {
-		t.Run("it gets missing parameter "+key, func(t *testing.T) {
+	phpMissingCases := []string{"PHP.not_a_real_key", "not_a_real_key", "Foobar.baz"}
+	for _, key := range phpMissingCases {
+		t.Run("PHP: it gets missing parameter "+key, func(t *testing.T) {
 			testGetMissingParameter(t, core.DotNotation, PHP_FILE_PATH, key)
 		})
 	}
 
-	validDotCases := map[string]string{
+	iniMissingCases := []string{"user.not_a_real_key", "not_a_real_key", "Foobar.baz"}
+	for _, key := range iniMissingCases {
+		t.Run("INI: it gets missing parameter "+key, func(t *testing.T) {
+			testGetMissingParameter(t, core.DotNotation, INI_FILE_PATH, key)
+		})
+	}
+
+	validPhpDotCases := map[string]string{
 		"PHP.engine":              "On",
 		"PHP.precision":           "14",
 		"PHP.disable_classes":     "",
@@ -234,16 +264,36 @@ func TestGetParameter(t *testing.T) {
 		"mail function.smtp_port": "25",
 	}
 
-	for key, expectedValue := range validDotCases {
-		t.Run("it gets existing parameter "+key, func(t *testing.T) {
+	for key, expectedValue := range validPhpDotCases {
+		t.Run("PHP: it gets existing parameter "+key, func(t *testing.T) {
 			testGetExistingParameter(t, core.DotNotation, PHP_FILE_PATH, key, expectedValue)
 		})
 	}
 
-	validBracketsCases := map[string]string{
+	validIniDotCases := map[string]string{
+		"user.name":       "User",
+		"user.email":      "user@example.com",
+		"core.editor":     "vim",
+		"core.autocrlf":   "input",
+		"core.fileMode":   "true",
+		"core.ignoreCase": "false",
+		"alias.co":        "checkout",
+		"alias.br":        "branch",
+		"alias.ci":        "commit",
+		"alias.st":        "status",
+		"push.default":    "simple",
+	}
+
+	for key, expectedValue := range validIniDotCases {
+		t.Run("INI: it gets existing parameter "+key, func(t *testing.T) {
+			testGetExistingParameter(t, core.DotNotation, INI_FILE_PATH, key, expectedValue)
+		})
+	}
+
+	validPhpBracketsCases := map[string]string{
 		"CLI Server[cli_server.color]": "On",
 	}
-	for key, expectedValue := range validBracketsCases {
+	for key, expectedValue := range validPhpBracketsCases {
 		t.Run("it gets existing parameter "+key, func(t *testing.T) {
 			testGetExistingParameter(t, core.BracketsNotation, PHP_FILE_PATH, key, expectedValue)
 		})
@@ -259,19 +309,67 @@ func TestEditParameter(t *testing.T) {
 		addedLine   string
 	}
 
-	dotCases := map[string]EditTestElement{
-		"PHP.engine":              {"PHP", "engine", "Off", "engine = On", "engine=Off"},
-		"PHP.precision":           {"PHP", "precision", "140", "precision = 14", "precision=140"},
-		"PHP.disable_classes":     {"PHP", "disable_classes", "myclass", "disable_classes =", "disable_classes=myclass"},
-		"PHP.error_reporting":     {"PHP", "error_reporting", "E_ALL", "error_reporting = E_ALL & ~E_DEPRECATED & ~E_STRICT", "error_reporting=E_ALL"},
-		"PHP.default_mimetype":    {"PHP", "default_mimetype", "\"text/plain\"", "default_mimetype = \"text/html\"", "default_mimetype=\"text/plain\""},
-		"PHP.zend_extension":      {"PHP", "zend_extension", "opcache.so", "zend_extension=opcache", "zend_extension=opcache.so"},
-		"mail function.SMTP":      {"mail function", "SMTP", "smtp.gmail.com", "SMTP = localhost", "SMTP=smtp.gmail.com"},
-		"mail function.smtp_port": {"mail function", "smtp_port", "587", "smtp_port = 25", "smtp_port=587"},
+	phpDotCases := map[string]EditTestElement{
+		"PHP.engine": {
+			"PHP",
+			"engine",
+			"Off",
+			"engine = On",
+			"engine=Off",
+		},
+		"PHP.precision": {
+			"PHP",
+			"precision",
+			"140",
+			"precision = 14",
+			"precision=140",
+		},
+		"PHP.disable_classes": {
+			"PHP",
+			"disable_classes",
+			"myclass",
+			"disable_classes =",
+			"disable_classes=myclass",
+		},
+		"PHP.error_reporting": {
+			"PHP",
+			"error_reporting",
+			"E_ALL",
+			"error_reporting = E_ALL & ~E_DEPRECATED & ~E_STRICT",
+			"error_reporting=E_ALL",
+		},
+		"PHP.default_mimetype": {
+			"PHP",
+			"default_mimetype",
+			"\"text/plain\"",
+			"default_mimetype = \"text/html\"",
+			"default_mimetype=\"text/plain\"",
+		},
+		"PHP.zend_extension": {
+			"PHP",
+			"zend_extension",
+			"opcache.so",
+			"zend_extension=opcache",
+			"zend_extension=opcache.so",
+		},
+		"mail function.SMTP": {
+			"mail function",
+			"SMTP",
+			"smtp.gmail.com",
+			"SMTP = localhost",
+			"SMTP=smtp.gmail.com",
+		},
+		"mail function.smtp_port": {
+			"mail function",
+			"smtp_port",
+			"587",
+			"smtp_port = 25",
+			"smtp_port=587",
+		},
 	}
 
-	for fullKey, value := range dotCases {
-		t.Run("it edits existing parameter "+fullKey, func(t *testing.T) {
+	for fullKey, value := range phpDotCases {
+		t.Run("PHP: it edits existing parameter "+fullKey, func(t *testing.T) {
 			testEditExistingParameter(
 				t,
 				core.DotNotation,
@@ -286,16 +384,112 @@ func TestEditParameter(t *testing.T) {
 		})
 	}
 
-	bracketsCases := map[string]EditTestElement{
+	phpBracketsCases := map[string]EditTestElement{
 		"CLI Server[cli_server.color]": {"CLI Server", "cli_server.color", "black", "cli_server.color = On", "cli_server.color=black"},
 	}
 
-	for fullKey, value := range bracketsCases {
-		t.Run("it edits existing parameter "+fullKey, func(t *testing.T) {
+	for fullKey, value := range phpBracketsCases {
+		t.Run("PHP: it edits existing parameter "+fullKey, func(t *testing.T) {
 			testEditExistingParameter(
 				t,
 				core.BracketsNotation,
 				PHP_FILE_PATH,
+				fullKey,
+				value.sectionName,
+				value.keyName,
+				value.newValue,
+				value.removedLine,
+				value.addedLine,
+			)
+		})
+	}
+
+	iniDotCases := map[string]EditTestElement{
+		"user.name": {
+			"user",
+			"name",
+			"John",
+			"name = User",
+			"name=John",
+		},
+		"user.email": {
+			"user",
+			"email",
+			"something@example.com",
+			"email = user@example.com",
+			"email=something@example.com",
+		},
+		"core.editor": {
+			"core",
+			"editor",
+			"vscode",
+			"editor = vim",
+			"editor=vscode",
+		},
+		"core.autocrlf": {
+			"core",
+			"autocrlf",
+			"true",
+			"autocrlf = input",
+			"autocrlf=true",
+		},
+		"core.fileMode": {
+			"core",
+			"fileMode",
+			"false",
+			"fileMode = true",
+			"fileMode=false",
+		},
+		"core.ignoreCase": {
+			"core",
+			"ignoreCase",
+			"true",
+			"ignoreCase = false",
+			"ignoreCase=true",
+		},
+		"alias.co": {
+			"alias",
+			"co",
+			"command",
+			"co = checkout",
+			"co=command",
+		},
+		"alias.br": {
+			"alias",
+			"br",
+			"foo",
+			"br = branch",
+			"br=foo",
+		},
+		"alias.ci": {
+			"alias",
+			"ci",
+			"bar",
+			"ci = commit",
+			"ci=bar",
+		},
+		"alias.st": {
+			"alias",
+			"st",
+			"baz",
+			"st = status",
+			"st=baz",
+		},
+		"push.default": {
+			"push",
+			"default",
+			"upstream",
+			"default = simple",
+			"default=upstream",
+		},
+	}
+
+	for fullKey, value := range iniDotCases {
+		t.Run("INI: it edits existing parameter "+fullKey, func(t *testing.T) {
+			testEditExistingParameter(
+				t,
+				core.DotNotation,
+				INI_FILE_PATH,
 				fullKey,
 				value.sectionName,
 				value.keyName,
