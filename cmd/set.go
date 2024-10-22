@@ -22,19 +22,46 @@ Longer
 		}
 		key, value, file := getSetCmdArguments(args)
 
-		useBrackets, err := cmd.Flags().GetBool("brackets")
-		if err != nil {
-			panic(err)
-		}
-		notationStyle := core.GetNotationStyle(useBrackets)
+		notationStyle := getNotationStyle(cmd)
+		outputType := getOutputType(cmd)
+		shouldOverwrite := shouldOverwrite(cmd)
 
 		config, err := configurator.SetParameter(notationStyle, file, key, value)
 		if err != nil {
 			panic(err)
 		}
 
-		fmt.Println(config.OutputFile(core.FullOutput))
+		if shouldOverwrite {
+			err = config.WriteToFile(file, outputType)
+			if err != nil {
+				panic(err)
+			}
+		} else {
+			fmt.Println(config.OutputFile(outputType))
+		}
 	},
+}
+
+func shouldOverwrite(cmd *cobra.Command) bool {
+	overwrite, err := cmd.Flags().GetBool("write")
+	if err != nil {
+		panic(err)
+	}
+
+	return overwrite
+}
+
+func getOutputType(cmd *cobra.Command) core.OutputType {
+	onlyValues, err := cmd.Flags().GetBool("only-values")
+	if err != nil {
+		panic(err)
+	}
+
+	if onlyValues {
+		return core.MeaningFullOutput
+	}
+
+	return core.FullOutput
 }
 
 func getSetCmdArguments(args []string) (string, string, string) {
@@ -51,4 +78,6 @@ func getSetCmdArguments(args []string) (string, string, string) {
 
 func init() {
 	setCmd.Flags().BoolP("brackets", "b", false, "Use brackts notation \"key[foo.bar]\" instead of dot notation")
+	setCmd.Flags().BoolP("write", "w", false, "Write the changes to the file")
+	setCmd.Flags().BoolP("only-values", "o", false, "Only output the values (remove empty lines and comments)")
 }
