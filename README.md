@@ -85,7 +85,7 @@ key2.foo = value2
 
 ## Currently supported configuration types
 
-  | Type       | config key | Comments               |
-  | ---        | ---        | ---                    |
-  | INI config | `ini`      |                        |
-  | PHP Ini    | `php`      | Just an alias to `ini` |
+| Type       | config key | Misc                   | Get parameter      | Set existing parameter | Set new parameter |
+| ---        | ---        | ---                    | ---                | ---                    | ---               |
+| INI config | `ini`      |                        | :heavy_check_mark: | :heavy_check_mark:     | _missing_         |
+| PHP Ini    | `php`      | Just an alias to `ini` | :heavy_check_mark: | :heavy_check_mark:     | _missing_         |
