@@ -52,7 +52,7 @@ func shouldOverwrite(cmd *cobra.Command) bool {
 }
 
 func getOutputType(cmd *cobra.Command) core.OutputType {
-	onlyValues, err := cmd.Flags().GetBool("only-values")
+	onlyValues, err := cmd.Flags().GetBool("values-only")
 	if err != nil {
 		panic(err)
 	}
@@ -79,5 +79,5 @@ func getSetCmdArguments(args []string) (string, string, string) {
 func init() {
 	setCmd.Flags().BoolP("brackets", "b", false, "Use brackts notation \"key[foo.bar]\" instead of dot notation")
 	setCmd.Flags().BoolP("write", "w", false, "Write the changes to the file")
-	setCmd.Flags().BoolP("only-values", "o", false, "Only output the values (remove empty lines and comments)")
+	setCmd.Flags().Bool("values-only", false, "Only output the values (remove empty lines and comments)")
 }
