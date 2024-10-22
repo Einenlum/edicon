@@ -14,8 +14,6 @@ const (
 
 type LineContentType int
 
-const GlobalSectionName = "__GLOBAL__"
-
 const (
 	KeyValueType LineContentType = iota
 	SectionLineType

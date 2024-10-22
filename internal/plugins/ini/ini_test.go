@@ -186,14 +186,27 @@ func TestGetParsedIniFile(t *testing.T) {
 	}
 
 	t.Run("it parses php sections", func(t *testing.T) {
-		testParseSections(t, PHP_FILE_PATH, []string{"PHP", "CLI Server", "Date", "mail function"})
+		testParseSections(t, PHP_FILE_PATH, []string{
+			core.GLOBAL_SECTION_NAME,
+			"PHP",
+			"CLI Server",
+			"Date",
+			"mail function",
+		})
 	})
 
 	t.Run("it parses ini sections", func(t *testing.T) {
-		testParseSections(t, INI_FILE_PATH, []string{"user", "core", "alias", "push"})
+		testParseSections(t, INI_FILE_PATH, []string{
+			core.GLOBAL_SECTION_NAME,
+			"user",
+			"core",
+			"alias",
+			"push",
+		})
 	})
 
 	dataProvider := []TestElement{
+		{core.GLOBAL_SECTION_NAME, 2, 1},
 		{"PHP", 19, 6},
 		{"CLI Server", 3, 1},
 		{"Date", 1, 0},
@@ -207,6 +220,7 @@ func TestGetParsedIniFile(t *testing.T) {
 	}
 
 	dataProvider = []TestElement{
+		{core.GLOBAL_SECTION_NAME, 2, 1},
 		{"user", 4, 2},
 		{"core", 7, 4},
 		{"alias", 6, 4},
@@ -254,6 +268,7 @@ func TestGetParameter(t *testing.T) {
 	}
 
 	validPhpDotCases := map[string]string{
+		"orphan_key":              "value",
 		"PHP.engine":              "On",
 		"PHP.precision":           "14",
 		"PHP.disable_classes":     "",
@@ -271,6 +286,7 @@ func TestGetParameter(t *testing.T) {
 	}
 
 	validIniDotCases := map[string]string{
+		"orphan_key":      "value",
 		"user.name":       "User",
 		"user.email":      "user@example.com",
 		"core.editor":     "vim",
@@ -310,6 +326,13 @@ func TestEditParameter(t *testing.T) {
 	}
 
 	phpDotCases := map[string]EditTestElement{
+		"orphan_key": {
+			core.GLOBAL_SECTION_NAME,
+			"orphan_key",
+			"foobar",
+			"orphan_key = value",
+			"orphan_key=foobar",
+		},
 		"PHP.engine": {
 			"PHP",
 			"engine",
@@ -405,6 +428,13 @@ func TestEditParameter(t *testing.T) {
 	}
 
 	iniDotCases := map[string]EditTestElement{
+		"orphan_key": {
+			core.GLOBAL_SECTION_NAME,
+			"orphan_key",
+			"foobar",
+			"orphan_key = value",
+			"orphan_key=foobar",
+		},
 		"user.name": {
 			"user",
 			"name",

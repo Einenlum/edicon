@@ -101,7 +101,7 @@ func EditConfigFile(
 	}
 
 	if len(decomposedKey) == 1 {
-		keyLine := getKeyLineBySectionName(iniFile.Sections, "PHP", decomposedKey[0])
+		keyLine := getKeyLineBySectionName(iniFile.Sections, core.GLOBAL_SECTION_NAME, decomposedKey[0])
 		if keyLine == nil {
 			return &IniConfiguration{}, errors.New("Key not found")
 		}
@@ -127,7 +127,7 @@ func GetParameterFromPath(notationStyle core.NotationStyle, filePath string, key
 
 	decomposedKey := core.DecomposeKey(notationStyle, key)
 	if len(decomposedKey) == 1 {
-		keyLine := getKeyLineBySectionName(iniFile.Sections, "PHP", decomposedKey[0])
+		keyLine := getKeyLineBySectionName(iniFile.Sections, core.GLOBAL_SECTION_NAME, decomposedKey[0])
 		if keyLine == nil {
 			return "", errors.New("Key not found")
 		}
