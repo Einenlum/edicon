@@ -1,8 +1,9 @@
 package ini
 
 import (
-	"einenlum/edicon/internal/io"
 	"strings"
+
+	"github.com/einenlum/edicon/internal/io"
 )
 
 func parseLineString(lineNumber int, lineString string) Line {

@@ -1,8 +1,8 @@
 package ini
 
 import (
-	"einenlum/edicon/internal/core"
-	"einenlum/edicon/internal/io"
+	"github.com/einenlum/edicon/internal/core"
+	"github.com/einenlum/edicon/internal/io"
 )
 
 type LineStatus int

@@ -1,9 +1,10 @@
 package cmd
 
 import (
-	"einenlum/edicon/internal/core"
-	"einenlum/edicon/internal/plugins"
 	"fmt"
+
+	"github.com/einenlum/edicon/internal/core"
+	"github.com/einenlum/edicon/internal/plugins"
 
 	"github.com/spf13/cobra"
 )

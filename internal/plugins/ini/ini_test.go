@@ -1,13 +1,14 @@
 package ini
 
 import (
-	"einenlum/edicon/internal/core"
-	"einenlum/edicon/internal/io"
 	"fmt"
 	"os"
 	"reflect"
 	"strings"
 	"testing"
+
+	"github.com/einenlum/edicon/internal/core"
+	"github.com/einenlum/edicon/internal/io"
 
 	// "github.com/google/go-cmp/cmp"
 	// "github.com/sergi/go-diff/diffmatchpatch"

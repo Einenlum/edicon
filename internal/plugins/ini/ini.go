@@ -1,9 +1,10 @@
 package ini
 
 import (
-	"einenlum/edicon/internal/core"
 	"errors"
 	"fmt"
+
+	"github.com/einenlum/edicon/internal/core"
 )
 
 type OutputType int

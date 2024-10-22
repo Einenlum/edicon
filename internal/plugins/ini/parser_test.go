@@ -1,10 +1,11 @@
 package ini
 
 import (
-	"einenlum/edicon/internal/core"
 	"fmt"
 	"reflect"
 	"testing"
+
+	"github.com/einenlum/edicon/internal/core"
 )
 
 type TestElement struct {

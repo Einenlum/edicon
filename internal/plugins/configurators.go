@@ -1,10 +1,11 @@
 package plugins
 
 import (
-	"einenlum/edicon/internal/core"
-	"einenlum/edicon/internal/plugins/ini"
 	"errors"
 	"fmt"
+
+	"github.com/einenlum/edicon/internal/core"
+	"github.com/einenlum/edicon/internal/plugins/ini"
 
 	"github.com/spf13/cobra"
 )

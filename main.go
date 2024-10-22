@@ -1,6 +1,6 @@
 package main
 
-import "einenlum/edicon/cmd"
+import "github.com/einenlum/edicon/cmd"
 
 func main() {
 	cmd.Execute()
