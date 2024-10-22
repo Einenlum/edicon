@@ -5,6 +5,8 @@ A small project written in go to edit any configuration file from the terminal.
 The goal is to be able to get and set values from any configuration file without having to rely on tools like `sed` or `awk`.
 It should only change the matching lines and keep the rest of the file intact to have a clean diff.
 
+This is a fun toy project to learn go. Does it make sense? Probably not. Is it well written or thought out? Definitely not.
+
 ## Installation
 
 ```bash
@@ -89,3 +91,9 @@ key2.foo = value2
 | ---        | ---        | ---                    | ---                | ---                    | ---               |
 | INI config | `ini`      |                        | :heavy_check_mark: | :heavy_check_mark:     | _missing_         |
 | PHP Ini    | `php`      | Just an alias to `ini` | :heavy_check_mark: | :heavy_check_mark:     | _missing_         |
+
+## Misc
+
+- Why not use a parser like [go-ini](https://github.com/go-ini/ini)?
+
+Because I want to keep the original formatting of the file. If I use a parser I would lose comments, empty lines, etc.
