@@ -1,5 +1,9 @@
 package ini
 
+import (
+	"einenlum/edicon/internal/core"
+)
+
 type LineStatus int
 
 const (
@@ -41,7 +45,7 @@ type Line struct {
 	SectionLine   *SectionLine
 }
 
-type IniFile struct {
+type IniConfiguration struct {
 	Sections []*Section
 	FilePath string
 }
@@ -79,11 +83,27 @@ func (line *Line) ToString() string {
 	return line.StringContent
 }
 
-// type IniConfigurator struct{}
+func (config *IniConfiguration) OutputFile(outputType int) (string, error) {
+	iniOutputType := OutputType(outputType)
 
-// func (configurator *IniConfigurator) GetParameter(
-// 	notationStyle NotationStyle,
-// 	filePath string,
-// 	key string,
-// ) (string, error) {
-// }
+	return OutputConfigFile(config, iniOutputType), nil
+}
+
+type IniConfigurator struct{}
+
+func (configurator *IniConfigurator) GetParameter(
+	notationStyle core.NotationStyle,
+	filePath string,
+	key string,
+) (string, error) {
+	return GetParameterFromPath(notationStyle, filePath, key)
+}
+
+func (configurator *IniConfigurator) SetParameter(
+	notationStyle core.NotationStyle,
+	filePath string,
+	key string,
+	value string,
+) (*IniConfiguration, error) {
+	return EditConfigFile(notationStyle, filePath, key, value)
+}

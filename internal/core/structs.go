@@ -1,6 +1,8 @@
 package core
 
-type Configuration interface{}
+type Configuration interface {
+	OutputFile(outputType int) (string, error)
+}
 
 type Configurator interface {
 	GetParameter(
