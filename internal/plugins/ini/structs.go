@@ -20,6 +20,10 @@ const (
 	OtherType
 )
 
+type GlobalSection struct {
+	Lines []*Line
+}
+
 type Section struct {
 	Name  string
 	Lines []*Line
@@ -46,8 +50,9 @@ type Line struct {
 }
 
 type IniConfiguration struct {
-	Sections []*Section
-	FilePath string
+	GlobalSection *GlobalSection
+	Sections      []*Section
+	FilePath      string
 }
 
 func (line *Line) SetValue(value string) {

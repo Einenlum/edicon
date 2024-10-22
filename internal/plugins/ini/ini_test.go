@@ -18,6 +18,9 @@ const (
 	INI_FILE_PATH                 = "../../../data/ini/ini.ini"
 	PHP_KEY_VALUES_ONLY_FILE_PATH = "../../../data/ini/php_key_values_only.ini"
 	INI_KEY_VALUES_ONLY_FILE_PATH = "../../../data/ini/ini_key_values_only.ini"
+
+	// A fake section name to test the global section more easily
+	GLOBAL_SECTION_NAME = "test_global"
 )
 
 func testParseSections(t *testing.T, filepath string, expectedSectionNames []string) {
@@ -55,17 +58,24 @@ func testParseSection(
 		t.Fatal("Could not read the file", filepath, err.Error())
 	}
 
-	section := GetSectionByName(config.Sections, sectionName)
-	if section == nil {
-		t.Fatal("Could not find section", sectionName)
+	lines := []*Line{}
+	if sectionName == GLOBAL_SECTION_NAME {
+		section := config.GlobalSection
+		lines = section.Lines
+	} else {
+		section := GetSectionByName(config.Sections, sectionName)
+		if section == nil {
+			t.Fatal("Could not find section", sectionName)
+		}
+		lines = section.Lines
 	}
 
-	if len(section.Lines) != expectedLines {
-		t.Fatal(fmt.Sprintf("Expected %d lines, got %d", expectedLines, len(section.Lines)))
+	if len(lines) != expectedLines {
+		t.Fatal(fmt.Sprintf("Expected %d lines, got %d", expectedLines, len(lines)))
 	}
 
 	keyValues := []*Line{}
-	for _, line := range section.Lines {
+	for _, line := range lines {
 		if line.ContentType == KeyValueType {
 			keyValues = append(keyValues, line)
 		}
@@ -150,7 +160,12 @@ func testEditExistingParameter(
 		t.Fatal(err)
 	}
 
-	keyLine := getKeyLineBySectionName(config.Sections, sectionName, keyName)
+	var keyLine *Line
+	if sectionName == GLOBAL_SECTION_NAME {
+		keyLine = getKeyLine(config.GlobalSection.Lines, keyName)
+	} else {
+		keyLine = getKeyLineBySectionName(config.Sections, sectionName, keyName)
+	}
 	if keyLine == nil {
 		t.Fatal(fmt.Sprintf("Could not find key %s in section %s", keyName, sectionName))
 	}
@@ -187,7 +202,6 @@ func TestGetParsedIniFile(t *testing.T) {
 
 	t.Run("it parses php sections", func(t *testing.T) {
 		testParseSections(t, PHP_FILE_PATH, []string{
-			core.GLOBAL_SECTION_NAME,
 			"PHP",
 			"CLI Server",
 			"Date",
@@ -197,7 +211,6 @@ func TestGetParsedIniFile(t *testing.T) {
 
 	t.Run("it parses ini sections", func(t *testing.T) {
 		testParseSections(t, INI_FILE_PATH, []string{
-			core.GLOBAL_SECTION_NAME,
 			"user",
 			"core",
 			"alias",
@@ -206,7 +219,7 @@ func TestGetParsedIniFile(t *testing.T) {
 	})
 
 	dataProvider := []TestElement{
-		{core.GLOBAL_SECTION_NAME, 2, 1},
+		{GLOBAL_SECTION_NAME, 2, 1},
 		{"PHP", 19, 6},
 		{"CLI Server", 3, 1},
 		{"Date", 1, 0},
@@ -220,7 +233,7 @@ func TestGetParsedIniFile(t *testing.T) {
 	}
 
 	dataProvider = []TestElement{
-		{core.GLOBAL_SECTION_NAME, 2, 1},
+		{GLOBAL_SECTION_NAME, 2, 1},
 		{"user", 4, 2},
 		{"core", 7, 4},
 		{"alias", 6, 4},
@@ -327,7 +340,7 @@ func TestEditParameter(t *testing.T) {
 
 	phpDotCases := map[string]EditTestElement{
 		"orphan_key": {
-			core.GLOBAL_SECTION_NAME,
+			GLOBAL_SECTION_NAME,
 			"orphan_key",
 			"foobar",
 			"orphan_key = value",
@@ -429,7 +442,7 @@ func TestEditParameter(t *testing.T) {
 
 	iniDotCases := map[string]EditTestElement{
 		"orphan_key": {
-			core.GLOBAL_SECTION_NAME,
+			GLOBAL_SECTION_NAME,
 			"orphan_key",
 			"foobar",
 			"orphan_key = value",

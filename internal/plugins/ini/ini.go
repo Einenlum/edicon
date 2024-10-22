@@ -38,6 +38,12 @@ func OutputConfigFile(iniFile *IniConfiguration, outputType OutputType) string {
 		return line.ContentType != OtherType
 	}
 
+	for _, line := range iniFile.GlobalSection.Lines {
+		if shouldBePrinted(*line) {
+			output += line.ToString() + "\n"
+		}
+	}
+
 	for _, section := range iniFile.Sections {
 		for _, line := range section.Lines {
 			if shouldBePrinted(*line) {
@@ -55,7 +61,8 @@ func GetParsedIniFile(filePath string) (IniConfiguration, error) {
 		return IniConfiguration{}, err
 	}
 
-	return IniConfiguration{getSections(parsedLines), filePath}, nil
+	globalSection, sections := getSections(parsedLines)
+	return IniConfiguration{globalSection, sections, filePath}, nil
 }
 
 func GetSectionByName(sections []*Section, name string) *Section {
@@ -68,8 +75,8 @@ func GetSectionByName(sections []*Section, name string) *Section {
 	return nil
 }
 
-func getKeyLine(section *Section, key string) *Line {
-	for _, line := range section.Lines {
+func getKeyLine(lines []*Line, key string) *Line {
+	for _, line := range lines {
 		if line.ContentType == KeyValueType && line.KeyValue.Key == key {
 			return line
 		}
@@ -84,7 +91,7 @@ func getKeyLineBySectionName(sections []*Section, sectionName string, key string
 		return nil
 	}
 
-	return getKeyLine(section, key)
+	return getKeyLine(section.Lines, key)
 }
 
 func EditConfigFile(
@@ -101,7 +108,7 @@ func EditConfigFile(
 	}
 
 	if len(decomposedKey) == 1 {
-		keyLine := getKeyLineBySectionName(iniFile.Sections, core.GLOBAL_SECTION_NAME, decomposedKey[0])
+		keyLine := getKeyLine(iniFile.GlobalSection.Lines, decomposedKey[0])
 		if keyLine == nil {
 			return &IniConfiguration{}, errors.New("Key not found")
 		}
@@ -127,7 +134,7 @@ func GetParameterFromPath(notationStyle core.NotationStyle, filePath string, key
 
 	decomposedKey := core.DecomposeKey(notationStyle, key)
 	if len(decomposedKey) == 1 {
-		keyLine := getKeyLineBySectionName(iniFile.Sections, core.GLOBAL_SECTION_NAME, decomposedKey[0])
+		keyLine := getKeyLine(iniFile.GlobalSection.Lines, decomposedKey[0])
 		if keyLine == nil {
 			return "", errors.New("Key not found")
 		}

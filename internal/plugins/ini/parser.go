@@ -3,7 +3,6 @@ package ini
 import (
 	"strings"
 
-	"github.com/einenlum/edicon/internal/core"
 	"github.com/einenlum/edicon/internal/io"
 )
 
@@ -113,21 +112,23 @@ func ParseIniFile(file string) ([]*Line, error) {
 	return parsedLines, nil
 }
 
-func getSections(parsedLines []*Line) []*Section {
-	currentSection := &Section{core.GLOBAL_SECTION_NAME, []*Line{}}
-	sections := []*Section{currentSection}
+func getSections(parsedLines []*Line) (*GlobalSection, []*Section) {
+	globalSection := &GlobalSection{[]*Line{}}
+	var currentSection *Section = nil
+	sections := []*Section{}
 
 	for _, line := range parsedLines {
 		if line.ContentType == SectionLineType {
 			currentSection = &Section{line.SectionLine.SectionName, []*Line{}}
 			sections = append(sections, currentSection)
 		}
-		currentSection.Lines = append(currentSection.Lines, line)
+
+		if currentSection == nil {
+			globalSection.Lines = append(globalSection.Lines, line)
+		} else {
+			currentSection.Lines = append(currentSection.Lines, line)
+		}
 	}
 
-	return sections
-}
-
-func getGlobalSection(sections []*Section) *Section {
-	return GetSectionByName(sections, core.GLOBAL_SECTION_NAME)
+	return globalSection, sections
 }
