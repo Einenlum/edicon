@@ -18,5 +18,5 @@ type Configurator interface {
 		filePath string,
 		key string,
 		value string,
-	) (*Configuration, error)
+	) (Configuration, error)
 }

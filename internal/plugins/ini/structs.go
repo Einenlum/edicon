@@ -105,7 +105,7 @@ func (config *IniConfiguration) WriteToFile(filepath string, outputType int) err
 
 type IniConfigurator struct{}
 
-func (configurator *IniConfigurator) GetParameter(
+func (configurator IniConfigurator) GetParameter(
 	notationStyle core.NotationStyle,
 	filePath string,
 	key string,
@@ -113,11 +113,16 @@ func (configurator *IniConfigurator) GetParameter(
 	return GetParameterFromPath(notationStyle, filePath, key)
 }
 
-func (configurator *IniConfigurator) SetParameter(
+func (configurator IniConfigurator) SetParameter(
 	notationStyle core.NotationStyle,
 	filePath string,
 	key string,
 	value string,
-) (*IniConfiguration, error) {
-	return EditConfigFile(notationStyle, filePath, key, value)
+) (core.Configuration, error) {
+	config, err := EditConfigFile(notationStyle, filePath, key, value)
+	if err != nil {
+		return nil, err
+	}
+
+	return config, nil
 }
