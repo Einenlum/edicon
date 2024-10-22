@@ -10,5 +10,6 @@ func InitCommonCommands(cmd *cobra.Command) {
 }
 
 func InitConfigCommands(cmd *cobra.Command) {
+	cmd.AddCommand(iniCmd)
 	cmd.AddCommand(phpCmd)
 }
